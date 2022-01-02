@@ -24,6 +24,8 @@ import javax.swing.event.DocumentListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -71,18 +73,11 @@ public class SearchDialog {
 			searchButton.addActionListener(action -> {
 				show(searchType);
 			});
-
 			// add the button on the correct x position and add insets (spacing between the elements)
-			switch (searchType.ordinal()) {
-				case 0: {
-					optionsPanel.add(searchButton, cb.pos(0, 0).insets(0, 2, 2, 0).build());
-				}
-				case 1: {
-					optionsPanel.add(searchButton, cb.pos(1, 0).insets(0, 2, 2, 0).build());
-				}
-				case 2: {
-					optionsPanel.add(searchButton, cb.pos(2, 0).insets(0, 2, 2, 0).build());
-				}
+			switch (searchType) {
+				case CLASS -> optionsPanel.add(searchButton, cb.pos(0, 0).insets(0, 2, 2, 0).build());
+				case METHOD -> optionsPanel.add(searchButton, cb.pos(1, 0).insets(0, 2, 2, 2).build());
+				case FIELD -> optionsPanel.add(searchButton, cb.pos(2, 0).insets(0, 0, 2, 2).build());
 			}
 		}
 
@@ -367,7 +362,7 @@ public class SearchDialog {
 		}
 
 		public String getText() {
-			return this.name().toLowerCase();
+			return this.name().charAt(0) + this.name().substring(1).toLowerCase();
 		}
 
 		public Icon getIcon() {
