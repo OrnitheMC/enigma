@@ -11,12 +11,10 @@
 
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.*;
@@ -29,6 +27,7 @@ import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
+import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -55,12 +54,33 @@ public class SearchDialog {
 
 		su = new SearchUtil<>();
 
+		JPanel optionsPanel = new JPanel(new GridBagLayout());
+
 		dialog = new JDialog(parent.getFrame(), I18n.translate("menu.search"), true);
 		JPanel contentPane = new JPanel();
 		contentPane.setBorder(ScaleUtil.createEmptyBorder(4, 4, 4, 4));
 		contentPane.setLayout(new BorderLayout(ScaleUtil.scale(4), ScaleUtil.scale(4)));
 
-		JMenuBar searchBar = new JMenuBar();
+		// build the new grid bag that fills horizontally (i.e. it takes up the complete horizontal space)
+		GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create().weightX(1).fill(GridBagConstraints.HORIZONTAL);
+
+		// add a button for each search type
+		for (SearchDialog.SearchType searchType : SearchDialog.SearchType.values()) {
+			JButton searchButton = new JButton(searchType.getText());
+			searchButton.setIcon(searchType.getIcon());
+
+			// when button is pressed, switch to the search mode corresponding to that button
+			searchButton.addActionListener(action -> {
+				show(searchType);
+			});
+			// add the button on the correct x position and add insets (spacing between the elements)
+			switch (searchType) {
+				case CLASS -> optionsPanel.add(searchButton, cb.pos(0, 0).insets(0, 2, 2, 0).build());
+				case METHOD -> optionsPanel.add(searchButton, cb.pos(1, 0).insets(0, 2, 2, 2).build());
+				case FIELD -> optionsPanel.add(searchButton, cb.pos(2, 0).insets(0, 0, 2, 2).build());
+			}
+		}
+
 		searchField = new JTextField();
 		searchField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -98,18 +118,9 @@ public class SearchDialog {
 		});
 		searchField.addActionListener(e -> openSelected());
 
-		// add buttons
-		for (SearchDialog.SearchType searchType : SearchDialog.SearchType.values()) {
-			JButton searchButton = new JButton(searchType.getText());
-			searchButton.addActionListener(action -> {
-				show(searchType);
-			});
-			searchBar.add(searchButton);
-		}
-
-		searchBar.add(searchField);
-		contentPane.add(searchBar, BorderLayout.NORTH);
-
+		// add the search field to the panel. Set it's with as 3, so it scales properly when resizing. Set top padding for space between the buttons above it
+		optionsPanel.add(searchField, cb.pos(0, 1).width(3).weightX(3).insets(2, 0, 0, 0).build());
+		contentPane.add(optionsPanel, BorderLayout.NORTH);
 
 		classListModel = new DefaultListModel<>();
 		classList = new JList<>();
@@ -338,18 +349,24 @@ public class SearchDialog {
 	}
 
 	public enum SearchType {
-		CLASS(true),
-		METHOD(true),
-		FIELD(true);
+		CLASS(true, GuiUtil.CLASS_ICON),
+		METHOD(true, GuiUtil.METHOD_ICON),
+		FIELD(true, GuiUtil.FIELD_ICON);
 
-		private boolean inline;
+		private final boolean inline;
+		private final Icon icon;
 
-		private SearchType(boolean inline) {
+		private SearchType(boolean inline, Icon icon) {
 			this.inline = inline;
+			this.icon = icon;
 		}
 
 		public String getText() {
-			return this.name().toLowerCase();
+			return this.name().charAt(0) + this.name().substring(1).toLowerCase();
+		}
+
+		public Icon getIcon() {
+			return this.icon;
 		}
 
 		public boolean isInline() {
