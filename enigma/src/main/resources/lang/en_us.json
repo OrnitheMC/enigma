@@ -49,6 +49,7 @@
 	"menu.view.change.title": "Changes",
 	"menu.view.change.summary": "Changes will be applied after the next restart.",
 	"menu.search": "Search",
+	"menu.search.general": "Search",
 	"menu.search.class": "Search Classes",
 	"menu.search.method": "Search Methods",
 	"menu.search.field": "Search Fields",

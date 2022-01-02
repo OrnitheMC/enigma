@@ -45,10 +45,10 @@ public class TranslationMethodVisitor extends MethodVisitor {
 	}
 
 	@Override
-	public void visitFrame(int type, int localCount, Object[] locals, int stackCount, Object[] stack) {
+	public void visitFrame(int searchType, int localCount, Object[] locals, int stackCount, Object[] stack) {
 		Object[] translatedLocals = this.getTranslatedFrame(locals, localCount);
 		Object[] translatedStack = this.getTranslatedFrame(stack, stackCount);
-		super.visitFrame(type, localCount, translatedLocals, stackCount, translatedStack);
+		super.visitFrame(searchType, localCount, translatedLocals, stackCount, translatedStack);
 	}
 
 	private Object[] getTranslatedFrame(Object[] array, int count) {
@@ -58,8 +58,8 @@ public class TranslationMethodVisitor extends MethodVisitor {
 		for (int i = 0; i < count; i++) {
 			Object object = array[i];
 			if (object instanceof String) {
-				String type = (String) object;
-				array[i] = translator.translate(new ClassEntry(type)).getFullName();
+				String searchType = (String) object;
+				array[i] = translator.translate(new ClassEntry(searchType)).getFullName();
 			}
 		}
 		return array;
@@ -87,8 +87,8 @@ public class TranslationMethodVisitor extends MethodVisitor {
 	}
 
 	@Override
-	public void visitTypeInsn(int opcode, String type) {
-		ClassEntry translatedEntry = translator.translate(new ClassEntry(type));
+	public void visitTypeInsn(int opcode, String searchType) {
+		ClassEntry translatedEntry = translator.translate(new ClassEntry(searchType));
 		super.visitTypeInsn(opcode, translatedEntry.getFullName());
 	}
 
@@ -113,12 +113,12 @@ public class TranslationMethodVisitor extends MethodVisitor {
 	}
 
 	@Override
-	public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-		if (type != null) {
-			ClassEntry translatedEntry = translator.translate(new ClassEntry(type));
+	public void visitTryCatchBlock(Label start, Label end, Label handler, String searchType) {
+		if (searchType != null) {
+			ClassEntry translatedEntry = translator.translate(new ClassEntry(searchType));
 			super.visitTryCatchBlock(start, end, handler, translatedEntry.getFullName());
 		} else {
-			super.visitTryCatchBlock(start, end, handler, type);
+			super.visitTryCatchBlock(start, end, handler, searchType);
 		}
 	}
 

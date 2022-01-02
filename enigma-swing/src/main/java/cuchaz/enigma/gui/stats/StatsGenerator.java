@@ -60,7 +60,7 @@ public class StatsGenerator {
         int numDone = 0;
         if (includedMembers.contains(StatsMember.METHODS) || includedMembers.contains(StatsMember.PARAMETERS)) {
             for (MethodEntry method : entryIndex.getMethods()) {
-                progress.step(numDone++, I18n.translate("type.methods"));
+                progress.step(numDone++, I18n.translate("searchType.methods"));
                 MethodEntry root = entryResolver
                         .resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
                         .stream()
@@ -88,7 +88,7 @@ public class StatsGenerator {
 
         if (includedMembers.contains(StatsMember.FIELDS)) {
             for (FieldEntry field : entryIndex.getFields()) {
-                progress.step(numDone++, I18n.translate("type.fields"));
+                progress.step(numDone++, I18n.translate("searchType.fields"));
                 ClassEntry clazz = field.getParent();
                 if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     update(counts, field);
@@ -99,7 +99,7 @@ public class StatsGenerator {
 
         if (includedMembers.contains(StatsMember.CLASSES)) {
             for (ClassEntry clazz : entryIndex.getClasses()) {
-                progress.step(numDone++, I18n.translate("type.classes"));
+                progress.step(numDone++, I18n.translate("searchType.classes"));
                 if (this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     update(counts, clazz);
                     totalMappable++;

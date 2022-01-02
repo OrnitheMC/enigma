@@ -7,17 +7,17 @@ import cuchaz.enigma.source.RenamableTokenType;
 
 public final class TranslateResult<T> {
 
-	private final RenamableTokenType type;
+	private final RenamableTokenType searchType;
 	private final T value;
 
-	private TranslateResult(RenamableTokenType type, T value) {
-		this.type = type;
+	private TranslateResult(RenamableTokenType searchType, T value) {
+		this.searchType = searchType;
 		this.value = value;
 	}
 
-	public static <T> TranslateResult<T> of(RenamableTokenType type, T value) {
-		Objects.requireNonNull(type, "type must not be null");
-		return new TranslateResult<>(type, value);
+	public static <T> TranslateResult<T> of(RenamableTokenType searchType, T value) {
+		Objects.requireNonNull(searchType, "searchType must not be null");
+		return new TranslateResult<>(searchType, value);
 	}
 
 	// Used for translatables that don't have a concept of
@@ -40,7 +40,7 @@ public final class TranslateResult<T> {
 	}
 
 	public RenamableTokenType getType() {
-		return type;
+		return searchType;
 	}
 
 	public T getValue() {
@@ -48,19 +48,19 @@ public final class TranslateResult<T> {
 	}
 
 	public <R> TranslateResult<R> map(Function<T, R> op) {
-		return TranslateResult.of(this.type, op.apply(this.value));
+		return TranslateResult.of(this.searchType, op.apply(this.value));
 	}
 
 	public boolean isObfuscated() {
-		return this.type == RenamableTokenType.OBFUSCATED;
+		return this.searchType == RenamableTokenType.OBFUSCATED;
 	}
 
 	public boolean isDeobfuscated() {
-		return this.type == RenamableTokenType.DEOBFUSCATED;
+		return this.searchType == RenamableTokenType.DEOBFUSCATED;
 	}
 
 	public boolean isProposed() {
-		return this.type == RenamableTokenType.PROPOSED;
+		return this.searchType == RenamableTokenType.PROPOSED;
 	}
 
 	@Override
@@ -68,18 +68,18 @@ public final class TranslateResult<T> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TranslateResult<?> that = (TranslateResult<?>) o;
-		return type == that.type &&
+		return searchType == that.searchType &&
 				Objects.equals(value, that.value);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, value);
+		return Objects.hash(searchType, value);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("TranslateResult { type: %s, value: %s }", type, value);
+		return String.format("TranslateResult { searchType: %s, value: %s }", searchType, value);
 	}
 
 }

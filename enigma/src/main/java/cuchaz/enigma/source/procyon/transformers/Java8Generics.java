@@ -67,9 +67,9 @@ public class Java8Generics implements IAstTransform {
 		@Override
 		public Void visitObjectCreationExpression(ObjectCreationExpression node, Void data) {
 			super.visitObjectCreationExpression(node, data);
-			AstType type = node.getType();
-			if (type instanceof SimpleType && !((SimpleType) type).getTypeArguments().isEmpty()){
-				SimpleType simpleType = (SimpleType) type;
+			AstType searchType = node.getType();
+			if (searchType instanceof SimpleType && !((SimpleType) searchType).getTypeArguments().isEmpty()){
+				SimpleType simpleType = (SimpleType) searchType;
 				AstNodeCollection<AstType> typeArguments = simpleType.getTypeArguments();
 				if (typeArguments.size() == 1 && typeArguments.firstOrNullObject().toTypeReference().equals(CommonTypeReferences.Object)){
 					//all are <Object>, thereby redundant and/or bad

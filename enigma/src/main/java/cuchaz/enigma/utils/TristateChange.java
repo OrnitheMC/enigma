@@ -7,7 +7,7 @@ public final class TristateChange<T> {
 	private static final TristateChange<?> UNCHANGED = new TristateChange<>(Type.UNCHANGED, null);
 	private static final TristateChange<?> RESET = new TristateChange<>(Type.RESET, null);
 
-	private final Type type;
+	private final Type searchType;
 	private final T val;
 
 	@SuppressWarnings("unchecked")
@@ -24,29 +24,29 @@ public final class TristateChange<T> {
 		return new TristateChange<>(Type.SET, value);
 	}
 
-	private TristateChange(Type type, T val) {
-		this.type = type;
+	private TristateChange(Type searchType, T val) {
+		this.searchType = searchType;
 		this.val = val;
 	}
 
 	public Type getType() {
-		return this.type;
+		return this.searchType;
 	}
 
 	public boolean isUnchanged() {
-		return this.type == Type.UNCHANGED;
+		return this.searchType == Type.UNCHANGED;
 	}
 
 	public boolean isReset() {
-		return this.type == Type.RESET;
+		return this.searchType == Type.RESET;
 	}
 
 	public boolean isSet() {
-		return this.type == Type.SET;
+		return this.searchType == Type.SET;
 	}
 
 	public T getNewValue() {
-		if (this.type != Type.SET) throw new IllegalStateException(String.format("No concrete value in %s", this));
+		if (this.searchType != Type.SET) throw new IllegalStateException(String.format("No concrete value in %s", this));
 		return this.val;
 	}
 
@@ -55,18 +55,18 @@ public final class TristateChange<T> {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TristateChange<?> that = (TristateChange<?>) o;
-		return type == that.type &&
+		return searchType == that.searchType &&
 				Objects.equals(val, that.val);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(type, val);
+		return Objects.hash(searchType, val);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("TristateChange { type: %s, val: %s }", type, val);
+		return String.format("TristateChange { searchType: %s, val: %s }", searchType, val);
 	}
 
 	public enum Type {

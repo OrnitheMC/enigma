@@ -301,7 +301,7 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
             }
 
             //
-            // Remove switch map type wrappers that are no longer referenced.
+            // Remove switch map searchType wrappers that are no longer referenced.
             //
 
         outer:
@@ -388,13 +388,13 @@ public class ObfuscatedEnumSwitchRewriterTransform implements IAstTransform {
             return true;
         }
 
-        private static boolean isSwitchMapWrapper(final TypeReference type) {
-            if (type == null) {
+        private static boolean isSwitchMapWrapper(final TypeReference searchType) {
+            if (searchType == null) {
                 return false;
             }
 
-            final TypeDefinition definition = type instanceof TypeDefinition ? (TypeDefinition) type
-                                                                             : type.resolve();
+            final TypeDefinition definition = searchType instanceof TypeDefinition ? (TypeDefinition) searchType
+                                                                             : searchType.resolve();
 
             if (definition == null || !definition.isSynthetic() || !definition.isInnerClass() || !definition.isPackagePrivate()) {
                 return false;

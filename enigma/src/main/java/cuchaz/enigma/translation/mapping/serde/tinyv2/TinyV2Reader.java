@@ -286,14 +286,14 @@ public final class TinyV2Reader implements MappingsReader {
 		do {
 			ret.append(str, start, pos);
 			pos++;
-			int type;
+			int searchType;
 
 			if (pos >= str.length()) {
 				throw new RuntimeException("incomplete escape sequence at the end");
-			} else if ((type = ESCAPED.indexOf(str.charAt(pos))) < 0) {
+			} else if ((searchType = ESCAPED.indexOf(str.charAt(pos))) < 0) {
 				throw new RuntimeException("invalid escape character: \\" + str.charAt(pos));
 			} else {
-				ret.append(TO_ESCAPE.charAt(type));
+				ret.append(TO_ESCAPE.charAt(searchType));
 			}
 
 			start = pos + 1;

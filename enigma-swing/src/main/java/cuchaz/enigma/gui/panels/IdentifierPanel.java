@@ -119,15 +119,15 @@ public class IdentifierPanel {
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
 			} else if (deobfEntry instanceof LocalVariableEntry) {
 				LocalVariableEntry lve = (LocalVariableEntry) deobfEntry;
-				EditableType type;
+				EditableType searchType;
 
 				if (lve.isArgument()) {
-					type = EditableType.PARAMETER;
+					searchType = EditableType.PARAMETER;
 				} else {
-					type = EditableType.LOCAL_VARIABLE;
+					searchType = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(type, lve.getName());
+				this.nameField = th.addRenameTextField(searchType, lve.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
@@ -241,18 +241,18 @@ public class IdentifierPanel {
 			return textField;
 		}
 
-		public ConvertingTextField addRenameTextField(EditableType type, String c2) {
-			String description = switch(type) {
+		public ConvertingTextField addRenameTextField(EditableType searchType, String c2) {
+			String description = switch(searchType) {
 				case CLASS -> I18n.translate("info_panel.identifier.class");
 				case METHOD -> I18n.translate("info_panel.identifier.method");
 				case FIELD -> I18n.translate("info_panel.identifier.field");
 				case PARAMETER, LOCAL_VARIABLE -> I18n.translate("info_panel.identifier.variable");
-				default -> throw new IllegalStateException("Unexpected value: " + type);
+				default -> throw new IllegalStateException("Unexpected value: " + searchType);
 			};
 
 			if (this.gui.getController().project.isRenamable(e)) {
 				ConvertingTextField field = addConvertingTextField(description, c2);
-				field.setEditable(this.gui.isEditable(type));
+				field.setEditable(this.gui.isEditable(searchType));
 				return field;
 			} else {
 				addStringRow(description, c2);
@@ -268,7 +268,7 @@ public class IdentifierPanel {
 			addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
 		}
 
-		public JComboBox<AccessModifier> addModifierRow(String c1, EditableType type, Consumer<AccessModifier> changeListener) {
+		public JComboBox<AccessModifier> addModifierRow(String c1, EditableType searchType, Consumer<AccessModifier> changeListener) {
 			EnigmaProject project = this.gui.getController().project;
 
 			if (!project.isRenamable(e)) {
@@ -279,7 +279,7 @@ public class IdentifierPanel {
 			EntryMapping mapping = project.getMapper().getDeobfMapping(e);
 			combo.setSelectedIndex(mapping.accessModifier().ordinal());
 
-			if (this.gui.isEditable(type)) {
+			if (this.gui.isEditable(searchType)) {
 				combo.addItemListener(event -> {
 					if (event.getStateChange() == ItemEvent.SELECTED) {
 						AccessModifier modifier = (AccessModifier) event.getItem();

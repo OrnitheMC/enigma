@@ -46,7 +46,7 @@ public class StatsDialog {
 			StatsMember m = e.getKey();
 			StatsResult result = e.getValue();
 
-			JCheckBox checkBox = new JCheckBox(I18n.translate("type." + m.name().toLowerCase(Locale.ROOT)));
+			JCheckBox checkBox = new JCheckBox(I18n.translate("searchType." + m.name().toLowerCase(Locale.ROOT)));
 			checkboxes.put(m, checkBox);
 			contentPane.add(checkBox, cb.pos(0, i[0]).weightX(1.0).anchor(GridBagConstraints.WEST).build());
 

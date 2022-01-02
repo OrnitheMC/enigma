@@ -93,8 +93,8 @@ public class EnigmaDumper extends StringStreamDumper {
         return new FieldEntry(getClassEntry(owner), name, new TypeDescriptor(desc));
     }
 
-    private ClassEntry getClassEntry(JavaTypeInstance type) {
-        return new ClassEntry(type.getRawName().replace('.', '/'));
+    private ClassEntry getClassEntry(JavaTypeInstance searchType) {
+        return new ClassEntry(searchType.getRawName().replace('.', '/'));
     }
 
     @Override
@@ -326,45 +326,45 @@ public class EnigmaDumper extends StringStreamDumper {
     }
 
     @Override
-    public Dumper dump(JavaTypeInstance type) {
-        dumpClass(TypeContext.None, type, false);
+    public Dumper dump(JavaTypeInstance searchType) {
+        dumpClass(TypeContext.None, searchType, false);
         return this;
     }
 
     @Override
-    public Dumper dump(JavaTypeInstance type, boolean defines) {
-        dumpClass(TypeContext.None, type, defines);
+    public Dumper dump(JavaTypeInstance searchType, boolean defines) {
+        dumpClass(TypeContext.None, searchType, defines);
         return this;
     }
 
     @Override
-    public Dumper dump(JavaTypeInstance type, TypeContext context) {
-        dumpClass(context, type, false);
+    public Dumper dump(JavaTypeInstance searchType, TypeContext context) {
+        dumpClass(context, searchType, false);
         return this;
     }
 
-    private void dumpClass(TypeContext context, JavaTypeInstance type, boolean defines) {
-        if (type instanceof JavaRefTypeInstance) {
-            type.dumpInto(this, typeUsage, context);
-            String name = typeUsage.getName(type, context); // the actually used name, dump will indent
+    private void dumpClass(TypeContext context, JavaTypeInstance searchType, boolean defines) {
+        if (searchType instanceof JavaRefTypeInstance) {
+            searchType.dumpInto(this, typeUsage, context);
+            String name = typeUsage.getName(searchType, context); // the actually used name, dump will indent
             int now = sb.length();
             Token token = new Token(now - name.length(), now, name);
 
             if (defines) {
-                index.addDeclaration(token, getClassEntry(type));
+                index.addDeclaration(token, getClassEntry(searchType));
             } else {
-                index.addReference(token, getClassEntry(type), contextMethod);
+                index.addReference(token, getClassEntry(searchType), contextMethod);
             }
             return;
         }
 
-        type.dumpInto(this, typeUsage, context);
+        searchType.dumpInto(this, typeUsage, context);
     }
 
     /**
      * {@inheritDoc}
      *
-     * <p>Otherwise the type usage override dumper will not go through the type instance dump
+     * <p>Otherwise the searchType usage override dumper will not go through the searchType instance dump
      * we have here.
      */
     @Override

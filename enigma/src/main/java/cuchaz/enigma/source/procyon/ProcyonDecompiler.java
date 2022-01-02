@@ -62,12 +62,12 @@ public class ProcyonDecompiler implements Decompiler {
 
 	@Override
 	public Source getSource(String className, @Nullable EntryRemapper remapper) {
-		TypeReference type = metadataSystem.lookupType(className);
-		if (type == null) {
+		TypeReference searchType = metadataSystem.lookupType(className);
+		if (searchType == null) {
 			throw new Error(String.format("Unable to find desc: %s", className));
 		}
 
-		TypeDefinition resolvedType = type.resolve();
+		TypeDefinition resolvedType = searchType.resolve();
 
 		DecompilerContext context = new DecompilerContext();
 		context.setCurrentType(resolvedType);
