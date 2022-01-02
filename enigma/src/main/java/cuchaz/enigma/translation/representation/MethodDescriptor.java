@@ -45,9 +45,9 @@ public class MethodDescriptor implements Translatable {
 					i++;
 					break;
 				} else {
-					String type = TypeDescriptor.parseFirst(desc.substring(i));
-					this.argumentDescs.add(new TypeDescriptor(type));
-					i += type.length();
+					String searchType = TypeDescriptor.parseFirst(desc.substring(i));
+					this.argumentDescs.add(new TypeDescriptor(searchType));
+					i += searchType.length();
 				}
 			}
 			this.returnDesc = new TypeDescriptor(TypeDescriptor.parseFirst(desc.substring(i)));

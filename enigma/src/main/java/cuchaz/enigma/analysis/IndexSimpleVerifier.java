@@ -26,22 +26,22 @@ public class IndexSimpleVerifier extends SimpleVerifier {
     @Override
     protected boolean isSubTypeOf(BasicValue value, BasicValue expected) {
         Type expectedType = expected.getType();
-        Type type = value.getType();
+        Type searchType = value.getType();
         switch (expectedType.getSort()) {
             case Type.INT:
             case Type.FLOAT:
             case Type.LONG:
             case Type.DOUBLE:
-                return type.equals(expectedType);
+                return searchType.equals(expectedType);
             case Type.ARRAY:
             case Type.OBJECT:
-                if (type.equals(NULL_TYPE)) {
+                if (searchType.equals(NULL_TYPE)) {
                     return true;
-                } else if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-                    if (isAssignableFrom(expectedType, type)) {
+                } else if (searchType.getSort() == Type.OBJECT || searchType.getSort() == Type.ARRAY) {
+                    if (isAssignableFrom(expectedType, searchType)) {
                         return true;
                     } else if (isInterface(expectedType)) {
-                        return isAssignableFrom(OBJECT_TYPE, type);
+                        return isAssignableFrom(OBJECT_TYPE, searchType);
                     } else {
                         return false;
                     }
@@ -54,13 +54,13 @@ public class IndexSimpleVerifier extends SimpleVerifier {
     }
 
     @Override
-    protected boolean isInterface(Type type) {
-        AccessFlags classAccess = entryIndex.getClassAccess(new ClassEntry(type.getInternalName()));
+    protected boolean isInterface(Type searchType) {
+        AccessFlags classAccess = entryIndex.getClassAccess(new ClassEntry(searchType.getInternalName()));
         if (classAccess != null) {
             return classAccess.isInterface();
         }
 
-        Class<?> clazz = getClass(type);
+        Class<?> clazz = getClass(searchType);
         if (clazz != null) {
             return clazz.isInterface();
         }
@@ -69,13 +69,13 @@ public class IndexSimpleVerifier extends SimpleVerifier {
     }
 
     @Override
-    protected Type getSuperClass(Type type) {
-        ClassDefEntry definition = entryIndex.getDefinition(new ClassEntry(type.getInternalName()));
+    protected Type getSuperClass(Type searchType) {
+        ClassDefEntry definition = entryIndex.getDefinition(new ClassEntry(searchType.getInternalName()));
         if (definition != null) {
             return Type.getType('L' + definition.getSuperClass().getFullName() + ';');
         }
 
-        Class<?> clazz = getClass(type);
+        Class<?> clazz = getClass(searchType);
         if (clazz != null) {
             return Type.getType(clazz.getSuperclass());
         }
@@ -144,9 +144,9 @@ public class IndexSimpleVerifier extends SimpleVerifier {
     }
 
     @Override
-    protected final Class<?> getClass(Type type) {
+    protected final Class<?> getClass(Type searchType) {
         try {
-            return Class.forName(type.getSort() == Type.ARRAY ? type.getDescriptor().replace('/', '.') : type.getClassName(), false, null);
+            return Class.forName(searchType.getSort() == Type.ARRAY ? searchType.getDescriptor().replace('/', '.') : searchType.getClassName(), false, null);
         } catch (ClassNotFoundException e) {
             return null;
         }

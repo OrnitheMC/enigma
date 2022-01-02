@@ -161,10 +161,10 @@ public class EditorPopupMenu {
 		boolean isConstructorEntry = referenceEntry instanceof MethodEntry me && me.isConstructor();
 		boolean isRenamable = ref != null && controller.project.isRenamable(ref);
 
-		EditableType type = EditableType.fromEntry(referenceEntry);
+		EditableType searchType = EditableType.fromEntry(referenceEntry);
 
-		this.renameItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
-		this.pasteItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
+		this.renameItem.setEnabled(isRenamable && (searchType != null && this.gui.isEditable(searchType)));
+		this.pasteItem.setEnabled(isRenamable && (searchType != null && this.gui.isEditable(searchType)));
 		this.editJavadocItem.setEnabled(isRenamable && this.gui.isEditable(EditableType.JAVADOC));
 		this.showInheritanceItem.setEnabled(isClassEntry || isMethodEntry || isConstructorEntry);
 		this.showImplementationsItem.setEnabled(isClassEntry || isMethodEntry);
@@ -173,7 +173,7 @@ public class EditorPopupMenu {
 		this.openEntryItem.setEnabled(isRenamable && (isClassEntry || isFieldEntry || isMethodEntry || isConstructorEntry));
 		this.openPreviousItem.setEnabled(controller.hasPreviousReference());
 		this.openNextItem.setEnabled(controller.hasNextReference());
-		this.toggleMappingItem.setEnabled(isRenamable && (type != null && this.gui.isEditable(type)));
+		this.toggleMappingItem.setEnabled(isRenamable && (searchType != null && this.gui.isEditable(searchType)));
 
 		if (referenceEntry != null && this.gui.getController().project.getMapper().extendedDeobfuscate(referenceEntry).isDeobfuscated()) {
 			this.toggleMappingItem.setText(I18n.translate("popup_menu.reset_obfuscated"));

@@ -138,7 +138,7 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		}
 
 		if (targetType != null && targetType.getKind() != ReferenceTargetType.Kind.NONE) {
-			buf.append(" on target of type ");
+			buf.append(" on target of searchType ");
 			buf.append(targetType);
 		}
 

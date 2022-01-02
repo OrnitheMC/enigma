@@ -26,6 +26,8 @@ import javax.swing.event.DocumentListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -58,6 +60,7 @@ public class SearchDialog {
 		contentPane.setBorder(ScaleUtil.createEmptyBorder(4, 4, 4, 4));
 		contentPane.setLayout(new BorderLayout(ScaleUtil.scale(4), ScaleUtil.scale(4)));
 
+		JMenuBar searchBar = new JMenuBar();
 		searchField = new JTextField();
 		searchField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -94,7 +97,19 @@ public class SearchDialog {
 			}
 		});
 		searchField.addActionListener(e -> openSelected());
-		contentPane.add(searchField, BorderLayout.NORTH);
+
+		// add buttons
+		for (SearchDialog.SearchType searchType : SearchDialog.SearchType.values()) {
+			JButton searchButton = new JButton(searchType.getText());
+			searchButton.addActionListener(action -> {
+				show(searchType);
+			});
+			searchBar.add(searchButton);
+		}
+
+		searchBar.add(searchField);
+		contentPane.add(searchBar, BorderLayout.NORTH);
+
 
 		classListModel = new DefaultListModel<>();
 		classList = new JList<>();
@@ -111,7 +126,11 @@ public class SearchDialog {
 				}
 			}
 		});
-		contentPane.add(new JScrollPane(classList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
+
+		contentPane.add(new JScrollPane(classList,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
+				BorderLayout.CENTER);
 
 		JPanel buttonBar = new JPanel();
 		buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -137,12 +156,12 @@ public class SearchDialog {
 		dialog.setLocationRelativeTo(parent.getFrame());
 	}
 
-	public void show(Type type) {
+	public void show(SearchDialog.SearchType searchType) {
 		su.clear();
 
 		final EntryIndex entryIndex = parent.getController().project.getJarIndex().getEntryIndex();
 
-		switch (type) {
+		switch (searchType) {
 			case CLASS -> entryIndex.getClasses().parallelStream()
 					.filter(e -> !e.isInnerClass())
 					.map(e -> SearchEntryImpl.from(e, parent.getController()))
@@ -163,7 +182,6 @@ public class SearchDialog {
 		}
 
 		updateList();
-
 		searchField.requestFocus();
 		searchField.selectAll();
 
@@ -319,9 +337,23 @@ public class SearchDialog {
 
 	}
 
-	public enum Type {
-		CLASS,
-		METHOD,
-		FIELD
+	public enum SearchType {
+		CLASS(true),
+		METHOD(true),
+		FIELD(true);
+
+		private boolean inline;
+
+		private SearchType(boolean inline) {
+			this.inline = inline;
+		}
+
+		public String getText() {
+			return this.name().toLowerCase();
+		}
+
+		public boolean isInline() {
+			return this.inline;
+		}
 	}
 }

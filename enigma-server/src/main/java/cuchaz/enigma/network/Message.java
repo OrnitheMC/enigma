@@ -48,11 +48,11 @@ public abstract class Message {
 	public static Message read(DataInput input) throws IOException {
 		byte typeId = input.readByte();
 		if (typeId < 0 || typeId >= Type.values().length) {
-			throw new IOException(String.format("Invalid message type ID %d", typeId));
+			throw new IOException(String.format("Invalid message searchType ID %d", typeId));
 		}
-		Type type = Type.values()[typeId];
+		Type searchType = Type.values()[typeId];
 		String user = input.readUTF();
-		switch (type) {
+		switch (searchType) {
 			case CHAT:
 				String message = input.readUTF();
 				return chat(user, message);

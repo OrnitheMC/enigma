@@ -463,11 +463,11 @@ public class EditorPanel {
 		if (this.boxHighlightPainters != null) {
 			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.PROPOSED);
 
-			for (RenamableTokenType type : tokens.keySet()) {
-				BoxHighlightPainter painter = this.boxHighlightPainters.get(type);
+			for (RenamableTokenType searchType : tokens.keySet()) {
+				BoxHighlightPainter painter = this.boxHighlightPainters.get(searchType);
 
 				if (painter != null) {
-					for (Token token : tokens.get(type)) {
+					for (Token token : tokens.get(searchType)) {
 						EntryReference<Entry<?>, Entry<?>> reference = this.getReference(token);
 						BoxHighlightPainter tokenPainter;
 

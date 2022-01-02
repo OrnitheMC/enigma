@@ -22,7 +22,7 @@ public class PacketHelper {
 	}
 
 	public static Entry<?> readEntry(DataInput input, Entry<?> parent, boolean includeParent) throws IOException {
-		int type = input.readUnsignedByte();
+		int searchType = input.readUnsignedByte();
 
 		if (includeParent && input.readBoolean()) {
 			parent = readEntry(input, null, true);
@@ -35,7 +35,7 @@ public class PacketHelper {
 			javadocs = readString(input);
 		}
 
-		switch (type) {
+		switch (searchType) {
 			case ENTRY_CLASS: {
 				if (parent != null && !(parent instanceof ClassEntry)) {
 					throw new IOException("Class requires class parent");
@@ -69,7 +69,7 @@ public class PacketHelper {
 				return new LocalVariableEntry(parentMethod, index, name, parameter, javadocs);
 			}
 			default:
-				throw new IOException("Received unknown entry type " + type);
+				throw new IOException("Received unknown entry searchType " + searchType);
 		}
 	}
 
@@ -78,7 +78,7 @@ public class PacketHelper {
 	}
 
 	public static void writeEntry(DataOutput output, Entry<?> entry, boolean includeParent) throws IOException {
-		// type
+		// searchType
 		if (entry instanceof ClassEntry) {
 			output.writeByte(ENTRY_CLASS);
 		} else if (entry instanceof FieldEntry) {
@@ -88,7 +88,7 @@ public class PacketHelper {
 		} else if (entry instanceof LocalVariableEntry) {
 			output.writeByte(ENTRY_LOCAL_VAR);
 		} else {
-			throw new IOException("Don't know how to serialize entry of type " + entry.getClass().getSimpleName());
+			throw new IOException("Don't know how to serialize entry of searchType " + entry.getClass().getSimpleName());
 		}
 
 		// parent
@@ -108,7 +108,7 @@ public class PacketHelper {
 			writeString(output, entry.getJavadocs());
 		}
 
-		// type-specific stuff
+		// searchType-specific stuff
 		if (entry instanceof FieldEntry) {
 			writeString(output, ((FieldEntry) entry).getDesc().toString());
 		} else if (entry instanceof MethodEntry) {

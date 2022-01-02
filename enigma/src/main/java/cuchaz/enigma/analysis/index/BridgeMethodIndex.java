@@ -105,7 +105,7 @@ public class BridgeMethodIndex implements JarIndexer {
 			}
 		}
 
-		// Check that the return type is bridge-compatible
+		// Check that the return searchType is bridge-compatible
 		return areTypesBridgeCompatible(bridgeDesc.getReturnDesc(), specializedDesc.getReturnDesc());
 	}
 

@@ -102,7 +102,7 @@ enum EntryType {
     ENTRY_CLASS = 0, ENTRY_FIELD = 1, ENTRY_METHOD = 2, ENTRY_LOCAL_VAR = 3;
 }
 struct Entry {
-    unsigned byte type;
+    unsigned byte searchType;
     boolean has_parent;
     if<has_parent> {
         Entry parent;
@@ -112,16 +112,16 @@ struct Entry {
     if<has_javadoc> {
         utf javadoc;
     }
-    if<type == ENTRY_FIELD || type == ENTRY_METHOD> {
+    if<searchType == ENTRY_FIELD || searchType == ENTRY_METHOD> {
         utf descriptor;
     }
-    if<type == ENTRY_LOCAL_VAR> {
+    if<searchType == ENTRY_LOCAL_VAR> {
         unsigned short index;
         boolean parameter;
     }
 }
 ```
-- `type`: The type of entry this is. One of `ENTRY_CLASS`, `ENTRY_FIELD`, `ENTRY_METHOD` or `ENTRY_LOCAL_VAR`.
+- `searchType`: The searchType of entry this is. One of `ENTRY_CLASS`, `ENTRY_FIELD`, `ENTRY_METHOD` or `ENTRY_LOCAL_VAR`.
 - `parent`: The parent entry. Only class entries may have no parent. fields, methods and inner classes must have their
             containing class as their parent. Local variables have a method as a parent.
 - `name`: The class/field/method/variable name.
@@ -144,8 +144,8 @@ enum MessageType {
 typedef unsigned byte message_type_t;
 
 struct Message {
-    message_type_t type;
-    union { // Note that the size of this varies depending on type, it is not constant size
+    message_type_t searchType;
+    union { // Note that the size of this varies depending on searchType, it is not constant size
         struct {
             utf user;
             utf message;
@@ -176,15 +176,15 @@ struct Message {
     } data;
 };
 ```
-- `type`: The type of message this is. One of `MESSAGE_CHAT`, `MESSAGE_CONNECT`, `MESSAGE_DISCONNECT`,
+- `searchType`: The searchType of message this is. One of `MESSAGE_CHAT`, `MESSAGE_CONNECT`, `MESSAGE_DISCONNECT`,
     `MESSAGE_EDIT_DOCS`, `MESSAGE_MARK_DEOBF`, `MESSAGE_REMOVE_MAPPING`, `MESSAGE_RENAME`.
-- `chat`: Chat message. Use in case `type` is `MESSAGE_CHAT`
-- `connect`: Sent when a user connects. Use in case `type` is `MESSAGE_CONNECT`
-- `disconnect`: Sent when a user disconnects. Use in case `type` is `MESSAGE_DISCONNECT`
-- `edit_docs`: Sent when a user edits the documentation of an entry. Use in case `type` is `MESSAGE_EDIT_DOCS`
-- `mark_deobf`: Sent when a user marks an entry as deobfuscated. Use in case `type` is `MESSAGE_MARK_DEOBF`
-- `remove_mapping`: Sent when a user removes a mapping. Use in case `type` is `MESSAGE_REMOVE_MAPPING`
-- `rename`: Sent when a user renames an entry. Use in case `type` is `MESSAGE_RENAME`
+- `chat`: Chat message. Use in case `searchType` is `MESSAGE_CHAT`
+- `connect`: Sent when a user connects. Use in case `searchType` is `MESSAGE_CONNECT`
+- `disconnect`: Sent when a user disconnects. Use in case `searchType` is `MESSAGE_DISCONNECT`
+- `edit_docs`: Sent when a user edits the documentation of an entry. Use in case `searchType` is `MESSAGE_EDIT_DOCS`
+- `mark_deobf`: Sent when a user marks an entry as deobfuscated. Use in case `searchType` is `MESSAGE_MARK_DEOBF`
+- `remove_mapping`: Sent when a user removes a mapping. Use in case `searchType` is `MESSAGE_REMOVE_MAPPING`
+- `rename`: Sent when a user renames an entry. Use in case `searchType` is `MESSAGE_RENAME`
 - `user`: The user that performed the action.
 - `message`: The message the user sent.
 - `entry`: The entry that was modified.
@@ -206,7 +206,7 @@ typedef enum access_modifier {
 } access_modifier_t;
 
 // Contains 4 packed values:
-// bitmask   type
+// bitmask   searchType
 // 00000011  tristate_change_t deobf_name_change;
 // 00001100  tristate_change_t access_change;
 // 00110000  tristate_change_t javadoc_change;
@@ -244,7 +244,7 @@ struct LoginC2SPacket {
                       kicked immediately. Currently always equal to 0.
 - `checksum`: the SHA-1 hash of the JAR file the client has open. If this does not match the SHA-1 hash of the JAR file
               the server has open, the client will be kicked.
-- `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data type.
+- `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data searchType.
               If this password is incorrect, the client will be kicked.
 - `username`: the username of the user logging in. If the username is not unique, the client will be kicked.
 
