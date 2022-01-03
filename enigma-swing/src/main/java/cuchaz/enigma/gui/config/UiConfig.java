@@ -385,7 +385,7 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50A050);
 			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 1.0);
 
-			s.setIfAbsentRgbColor("NameWarning", 0xFFD700);
+			s.setIfAbsentRgbColor("NameWarning", 0xFFCB71);
 			s.setIfAbsentDouble("NameWarning Alpha", 0.8);
 			s.setIfAbsentRgbColor("NameWarning Outline", 0xFF8C00);
 			s.setIfAbsentDouble("NameWarning Outline Alpha", 1.0);
@@ -420,10 +420,10 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50FA7B);
 			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 0.5);
 
-			s.setIfAbsentRgbColor("NameWarning", 0xFFB86C);
-			s.setIfAbsentDouble("NameWarning Alpha", 0.3);
-			s.setIfAbsentRgbColor("NameWarning Outline", 0xFFB86C);
-			s.setIfAbsentDouble("NameWarning Outline Alpha", 0.5);
+			s.setIfAbsentRgbColor("NameWarning", 0xFF9600);
+			s.setIfAbsentDouble("NameWarning Alpha", 0.4);
+			s.setIfAbsentRgbColor("NameWarning Outline", 0xFF9600);
+			s.setIfAbsentDouble("NameWarning Outline Alpha", 0.6);
 
 			s.setIfAbsentRgbColor("Editor Background", 0x282A36);
 			s.setIfAbsentRgbColor("Highlight", 0xFF79C6);
