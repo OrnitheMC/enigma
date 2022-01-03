@@ -20,6 +20,7 @@ import javax.swing.*;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 public class AboutDialog {
