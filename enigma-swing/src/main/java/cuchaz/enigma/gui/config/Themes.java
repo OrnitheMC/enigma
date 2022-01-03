@@ -1,6 +1,6 @@
 package cuchaz.enigma.gui.config;
 
-import java.awt.Font;
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,7 +90,8 @@ public class Themes {
 		return ImmutableMap.of(
 				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
 				RenamableTokenType.PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
-				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor())
+				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
+				RenamableTokenType.NAME_WARNING, BoxHighlightPainter.create(UiConfig.getNameWarningColor(), UiConfig.getNameWarningOutlineColor())
 		);
 	}
 

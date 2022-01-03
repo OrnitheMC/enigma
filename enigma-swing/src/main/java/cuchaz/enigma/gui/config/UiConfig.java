@@ -1,6 +1,8 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -146,6 +148,14 @@ public final class UiConfig {
 
 	public static Color getDeobfuscatedOutlineColor() {
 		return getThemeColorRgba("Deobfuscated Outline");
+	}
+
+	public static Color getNameWarningColor() {
+		return getThemeColorRgba("NameWarning");
+	}
+
+	public static Color getNameWarningOutlineColor() {
+		return getThemeColorRgba("NameWarning Outline");
 	}
 
 	public static Color getEditorBackgroundColor() {
@@ -359,18 +369,27 @@ public final class UiConfig {
 			s.setIfAbsentRgbColor("Line Numbers Foreground", 0x333300);
 			s.setIfAbsentRgbColor("Line Numbers Background", 0xEEEEFF);
 			s.setIfAbsentRgbColor("Line Numbers Selected", 0xCCCCEE);
+
 			s.setIfAbsentRgbColor("Obfuscated", 0xFFDCDC);
 			s.setIfAbsentDouble("Obfuscated Alpha", 1.0);
 			s.setIfAbsentRgbColor("Obfuscated Outline", 0xA05050);
 			s.setIfAbsentDouble("Obfuscated Outline Alpha", 1.0);
+
 			s.setIfAbsentRgbColor("Proposed", 0x000000);
 			s.setIfAbsentDouble("Proposed Alpha", 0.15);
 			s.setIfAbsentRgbColor("Proposed Outline", 0x000000);
 			s.setIfAbsentDouble("Proposed Outline Alpha", 0.75);
+
 			s.setIfAbsentRgbColor("Deobfuscated", 0xDCFFDC);
 			s.setIfAbsentDouble("Deobfuscated Alpha", 1.0);
 			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50A050);
 			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 1.0);
+
+			s.setIfAbsentRgbColor("NameWarning", 0xFFD700);
+			s.setIfAbsentDouble("NameWarning Alpha", 0.8);
+			s.setIfAbsentRgbColor("NameWarning Outline", 0xFF8C00);
+			s.setIfAbsentDouble("NameWarning Outline Alpha", 1.0);
+
 			s.setIfAbsentRgbColor("Editor Background", 0xFFFFFF);
 			s.setIfAbsentRgbColor("Highlight", 0x3333EE);
 			s.setIfAbsentRgbColor("Caret", 0x000000);
@@ -395,10 +414,17 @@ public final class UiConfig {
 			s.setIfAbsentDouble("Proposed Alpha", 0.3);
 			s.setIfAbsentRgbColor("Proposed Outline", 0x606366);
 			s.setIfAbsentDouble("Proposed Outline Alpha", 0.5);
+
 			s.setIfAbsentRgbColor("Deobfuscated", 0x50FA7B);
 			s.setIfAbsentDouble("Deobfuscated Alpha", 0.3);
 			s.setIfAbsentRgbColor("Deobfuscated Outline", 0x50FA7B);
 			s.setIfAbsentDouble("Deobfuscated Outline Alpha", 0.5);
+
+			s.setIfAbsentRgbColor("NameWarning", 0xFFB86C);
+			s.setIfAbsentDouble("NameWarning Alpha", 0.3);
+			s.setIfAbsentRgbColor("NameWarning Outline", 0xFFB86C);
+			s.setIfAbsentDouble("NameWarning Outline Alpha", 0.5);
+
 			s.setIfAbsentRgbColor("Editor Background", 0x282A36);
 			s.setIfAbsentRgbColor("Highlight", 0xFF79C6);
 			s.setIfAbsentRgbColor("Caret", 0xF8F8F2);

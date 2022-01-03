@@ -2,17 +2,19 @@ package cuchaz.enigma.gui.panels;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.EnigmaProject;
@@ -462,6 +464,7 @@ public class EditorPanel {
 
 		if (this.boxHighlightPainters != null) {
 			BoxHighlightPainter proposedPainter = this.boxHighlightPainters.get(RenamableTokenType.PROPOSED);
+			BoxHighlightPainter warningPainter = this.boxHighlightPainters.get(RenamableTokenType.NAME_WARNING);
 
 			for (RenamableTokenType searchType : tokens.keySet()) {
 				BoxHighlightPainter painter = this.boxHighlightPainters.get(searchType);
@@ -475,6 +478,20 @@ public class EditorPanel {
 							EditableType t = EditableType.fromEntry(reference.entry);
 							boolean editable = t == null || this.gui.isEditable(t);
 							tokenPainter = editable ? painter : proposedPainter;
+
+							if (reference.entry instanceof FieldEntry) {
+								EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
+								AccessFlags access = entryIndex.getFieldAccess((FieldEntry)reference.entry);
+								if (access != null && access.isFinal() && access.isStatic()) {
+
+									EntryRemapper mapper = this.controller.project.getMapper();
+									String name = mapper.getDeobfMapping(reference.entry).targetName();
+									if (name != null && !name.equals(name.toUpperCase())) {
+										tokenPainter = warningPainter;
+									}
+								}
+							}
+
 						} else {
 							tokenPainter = painter;
 						}
