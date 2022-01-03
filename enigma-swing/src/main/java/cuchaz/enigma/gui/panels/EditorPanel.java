@@ -14,7 +14,7 @@ import javax.swing.text.Highlighter.HighlightPainter;
 
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.representation.AccessFlags;
-import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.*;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.EnigmaProject;
@@ -42,8 +42,6 @@ import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
 
@@ -479,17 +477,8 @@ public class EditorPanel {
 							boolean editable = t == null || this.gui.isEditable(t);
 							tokenPainter = editable ? painter : proposedPainter;
 
-							if (reference.entry instanceof FieldEntry) {
-								EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
-								AccessFlags access = entryIndex.getFieldAccess((FieldEntry)reference.entry);
-								if (access != null && access.isFinal() && access.isStatic()) {
-
-									EntryRemapper mapper = this.controller.project.getMapper();
-									String name = mapper.getDeobfMapping(reference.entry).targetName();
-									if (name != null && !name.equals(name.toUpperCase())) {
-										tokenPainter = warningPainter;
-									}
-								}
+							if (!followsStyle(reference)) {
+								tokenPainter = warningPainter;
 							}
 
 						} else {
@@ -504,6 +493,56 @@ public class EditorPanel {
 
 		this.editor.validate();
 		this.editor.repaint();
+	}
+
+	public boolean followsStyle(EntryReference<Entry<?>, Entry<?>> reference) {
+		// get the mapper and get the mapped name from the mapper
+		EntryRemapper mapper = this.controller.project.getMapper();
+		String name = mapper.getDeobfMapping(reference.entry).targetName();
+		if (name != null) {
+
+			if (reference.entry instanceof ClassEntry) {
+				// remove the path (net/minecraft/ ... /) from the class name
+				return followsClassStyle(reference, name.substring(name.lastIndexOf('/') + 1));
+			} else if (reference.entry instanceof MethodEntry) {
+				return followsMethodStyle(reference, name);
+			} else if (reference.entry instanceof FieldEntry) {
+				return followsFieldStyle(reference, name);
+			} else if (reference.entry instanceof LocalVariableEntry) {
+				return followsArgumentStyle(reference, name);
+			} else {
+				return true;
+			}
+		} else {
+			// return true if the reference isn't mapped yet
+			return true;
+		}
+	}
+
+	public boolean followsClassStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
+		return Character.isUpperCase(name.charAt(0));
+	}
+
+	public boolean followsMethodStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
+		if (((MethodEntry)reference.entry).isConstructor()) {
+			return followsClassStyle(reference, name);
+		} else {
+			return Character.isLowerCase(name.charAt(0));
+		}
+	}
+
+	public boolean followsArgumentStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
+		return Character.isLowerCase(name.charAt(0));
+	}
+
+	public boolean followsFieldStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
+		EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
+		AccessFlags access = entryIndex.getFieldAccess((FieldEntry)reference.entry);
+		if (access != null && access.isFinal() && access.isStatic()) {
+			return name == null || name.equals(name.toUpperCase());
+		} else {
+			return Character.isLowerCase(name.charAt(0));
+		}
 	}
 
 	private void addHighlightedToken(Token token, HighlightPainter tokenPainter) {
