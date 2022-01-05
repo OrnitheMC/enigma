@@ -16,10 +16,7 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -69,6 +66,7 @@ public class Gui {
 	private final MenuBar menuBar;
 	private final ObfPanel obfPanel;
 	private final DeobfPanel deobfPanel;
+	private final WarningPanel warningPanel;
 	private final IdentifierPanel infoPanel;
 	private final StructurePanel structurePanel;
 	private final InheritanceTree inheritanceTree;
@@ -108,6 +106,7 @@ public class Gui {
 		this.controller = new GuiController(this, profile);
 		this.structurePanel = new StructurePanel(this);
 		this.deobfPanel = new DeobfPanel(this);
+		this.warningPanel = new WarningPanel(this);
 		this.infoPanel = new IdentifierPanel(this);
 		this.obfPanel = new ObfPanel(this);
 		this.menuBar = new MenuBar(this);
@@ -115,7 +114,7 @@ public class Gui {
 		this.implementationsTree = new ImplementationsTree(this);
 		this.callsTree = new CallsTree(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
+		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.obfPanel, this.deobfPanel), this.warningPanel);
 
 		this.setupUi();
 
@@ -296,6 +295,14 @@ public class Gui {
 
 	public void setDeobfClasses(Collection<ClassEntry> deobfClasses) {
 		this.deobfPanel.deobfClasses.setClasses(deobfClasses);
+	}
+
+	public void addWarningClass(ClassEntry warningClass) {
+		this.warningPanel.addEntry(warningClass);
+	}
+
+	public void removeWarningClass(ClassEntry warningClass) {
+		this.warningPanel.removeEntry(warningClass);
 	}
 
 	public void setMappingsFile(Path path) {

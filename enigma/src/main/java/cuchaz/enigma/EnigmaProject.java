@@ -136,18 +136,42 @@ public class EnigmaProject {
 			// HACKHACK: Object methods are not obfuscated identifiers
 			// HACKHACKHACK: hardcoded obfuscation format
 			String name = obfMethodEntry.getName();
-			
-			if (name.startsWith("method_")) {
-				String num = name.substring(7);
-				
-				try {
-					return Integer.parseInt(num) > 0;
-				} catch (NumberFormatException e) {
-					
+			String sig = obfMethodEntry.getDesc().toString();
+			//TODO replace with a map or check if declaring class is java.lang.Object
+			if (name.equals("clone") && sig.equals("()Ljava/lang/Object;")) {
+				return false;
+			} else if (name.equals("equals") && sig.equals("(Ljava/lang/Object;)Z")) {
+				return false;
+			} else if (name.equals("finalize") && sig.equals("()V")) {
+				return false;
+			} else if (name.equals("getClass") && sig.equals("()Ljava/lang/Class;")) {
+				return false;
+			} else if (name.equals("hashCode") && sig.equals("()I")) {
+				return false;
+			} else if (name.equals("notify") && sig.equals("()V")) {
+				return false;
+			} else if (name.equals("notifyAll") && sig.equals("()V")) {
+				return false;
+			} else if (name.equals("toString") && sig.equals("()Ljava/lang/String;")) {
+				return false;
+			} else if (name.equals("wait") && sig.equals("()V")) {
+				return false;
+			} else if (name.equals("wait") && sig.equals("(J)V")) {
+				return false;
+			} else if (name.equals("wait") && sig.equals("(JI)V")) {
+				return false;
+			} else {
+				ClassDefEntry parent = jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+				if (parent != null && parent.getSuperClass() != null && parent.getSuperClass().getFullName().equals("java/lang/Enum")) {
+					if (name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";")) {
+						return false;
+					} else if (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
+						return false;
+					}
+
 				}
 			}
-			
-			return false;
+
 		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
 			return false;
 		}

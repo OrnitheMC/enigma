@@ -87,7 +87,6 @@ public class EditorPanel {
 	public EditorPanel(Gui gui) {
 		this.gui = gui;
 		this.controller = gui.getController();
-
 		this.editor.setEditable(false);
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
@@ -478,9 +477,9 @@ public class EditorPanel {
 							tokenPainter = editable ? painter : proposedPainter;
 
 							if (!followsStyle(reference)) {
+								this.gui.addWarningClass(getClassParent(reference));
 								tokenPainter = warningPainter;
 							}
-
 						} else {
 							tokenPainter = painter;
 						}
@@ -495,12 +494,20 @@ public class EditorPanel {
 		this.editor.repaint();
 	}
 
+	public ClassEntry getClassParent(EntryReference<Entry<?>, Entry<?>> reference) {
+		// runs through the reference' parents until it finds a class
+		Entry<?> classEntry = reference.entry;
+		while (!(classEntry instanceof ClassEntry)) {
+			classEntry = reference.entry.getParent();
+		}
+		return (ClassEntry) classEntry;
+	}
+
 	public boolean followsStyle(EntryReference<Entry<?>, Entry<?>> reference) {
 		// get the mapper and get the mapped name from the mapper
 		EntryRemapper mapper = this.controller.project.getMapper();
 		String name = mapper.getDeobfMapping(reference.entry).targetName();
 		if (name != null) {
-
 			if (reference.entry instanceof ClassEntry) {
 				// remove the path (net/minecraft/ ... /) from the class name
 				return followsClassStyle(reference, name.substring(name.lastIndexOf('/') + 1));
@@ -537,8 +544,12 @@ public class EditorPanel {
 
 	public boolean followsFieldStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
 		EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
-		AccessFlags access = entryIndex.getFieldAccess((FieldEntry)reference.entry);
-		if (access != null && access.isFinal() && access.isStatic()) {
+		FieldEntry fieldEntry = (FieldEntry)reference.entry;
+		AccessFlags accessFlags = entryIndex.getFieldAccess(fieldEntry);
+		String fieldType = fieldEntry.getDesc().toString();
+
+		// Static Final fields follow a different naming style than other fields excluding atomics
+		if (accessFlags != null && accessFlags.isFinal() && accessFlags.isStatic() && !fieldType.contains("Atomic")) {
 			return name == null || name.equals(name.toUpperCase());
 		} else {
 			return Character.isLowerCase(name.charAt(0));
