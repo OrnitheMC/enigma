@@ -27,7 +27,7 @@ subprojects {
     }
 
     group = 'cuchaz'
-    version = '1.1.0'
+    version = 'ornithe-1.0.0'
 
     version = version + (System.getenv("GITHUB_ACTIONS") ? "" : "+local")
 
