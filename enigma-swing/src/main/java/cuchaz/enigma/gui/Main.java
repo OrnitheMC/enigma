@@ -166,7 +166,7 @@ public class Main {
 	}
 
 	private static void setApplicationIcon(Gui gui) throws IOException {
-		String path = "icon.jpg";
+		String path = "icon.png";
 		URL iconUrl = GuiUtil.class.getResource('/' + path);
 		if (iconUrl == null) {
 			throw new NoSuchElementException("Missing icon: '" + path + "' at " + path);
