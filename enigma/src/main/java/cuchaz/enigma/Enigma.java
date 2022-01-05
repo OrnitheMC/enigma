@@ -35,7 +35,7 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.utils.Utils;
 
 public class Enigma {
-    public static final String NAME = "Enigma";
+    public static final String NAME = "OrnitheMC - Enigma";
 	public static final String VERSION;
 	public static final String URL = "https://github.com/OrnitheMC/enigma";
     public static final int ASM_VERSION = Opcodes.ASM9;

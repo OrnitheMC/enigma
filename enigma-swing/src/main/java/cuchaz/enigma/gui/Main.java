@@ -11,15 +11,20 @@
 
 package cuchaz.enigma.gui;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.net.URL;
 
 import com.google.common.io.MoreFiles;
+import cuchaz.enigma.gui.util.GuiUtil;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -28,6 +33,8 @@ import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
+
+import javax.imageio.ImageIO;
 
 public class Main {
 
@@ -112,6 +119,8 @@ public class Main {
 			Themes.setupTheme();
 
 			Gui gui = new Gui(parsedProfile, editables);
+
+			setApplicationIcon(gui);
 			GuiController controller = gui.getController();
 			
 			if (options.has("single-class-tree")) {
@@ -154,6 +163,17 @@ public class Main {
 
 	private static void setDefaultSystemProperty(String property, String value) {
 		System.setProperty(property, System.getProperty(property, value));
+	}
+
+	private static void setApplicationIcon(Gui gui) throws IOException {
+		String path = "icon.jpg";
+		URL iconUrl = GuiUtil.class.getResource('/' + path);
+		if (iconUrl == null) {
+			throw new NoSuchElementException("Missing icon: '" + path + "' at " + path);
+		} else {
+			BufferedImage icon = ImageIO.read(iconUrl);
+			gui.getMainWindow().frame().setIconImage(icon);
+		}
 	}
 
 	public static class PathConverter implements ValueConverter<Path> {
