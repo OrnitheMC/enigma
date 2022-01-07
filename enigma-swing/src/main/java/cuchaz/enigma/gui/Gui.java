@@ -76,6 +76,7 @@ public class Gui {
 	private final EditorTabbedPane editorTabbedPane;
 
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
+	private final JSplitPane splitObfDeObf;
 	private final JSplitPane splitClasses;
 	private final JTabbedPane tabs = new JTabbedPane();
 	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
@@ -114,7 +115,8 @@ public class Gui {
 		this.implementationsTree = new ImplementationsTree(this);
 		this.callsTree = new CallsTree(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.obfPanel, this.deobfPanel), this.warningPanel);
+		this.splitObfDeObf = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.obfPanel, this.deobfPanel);
+		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, splitObfDeObf, this.warningPanel);
 
 		this.setupUi();
 
@@ -135,8 +137,6 @@ public class Gui {
 		this.exportSourceFileChooser.setAcceptAllFileFilterUsed(false);
 
 		this.exportJarFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-		this.splitClasses.setResizeWeight(0.3);
 		this.classesPanel.setPreferredSize(ScaleUtil.getDimension(250, 0));
 
 		// layout controls

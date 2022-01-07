@@ -13,6 +13,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 
 import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.gui.*;
+import cuchaz.enigma.gui.warning.WarningChecker;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.*;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
@@ -22,10 +24,6 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.classhandle.ClassHandleError;
 import cuchaz.enigma.events.ClassHandleListener;
-import cuchaz.enigma.gui.BrowserCaret;
-import cuchaz.enigma.gui.EditableType;
-import cuchaz.enigma.gui.Gui;
-import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -48,7 +46,7 @@ import cuchaz.enigma.utils.Result;
 public class EditorPanel {
 
 	private final JPanel ui = new JPanel();
-	private final JEditorPane editor = new JEditorPane();
+	private final TooltipEditorPane editor = new TooltipEditorPane();
 	private final JScrollPane editorScrollPane = new JScrollPane(this.editor);
 	private final EditorPopupMenu popupMenu;
 
@@ -84,6 +82,8 @@ public class EditorPanel {
 	private DecompiledClassSource source;
 	private boolean settingSource;
 
+	private WarningChecker warningChecker;
+
 	public EditorPanel(Gui gui) {
 		this.gui = gui;
 		this.controller = gui.getController();
@@ -113,6 +113,8 @@ public class EditorPanel {
 
 		this.boxHighlightPainters = Themes.getBoxHighlightPainters();
 
+		this.warningChecker = new WarningChecker(this.gui, this.controller, this.editor);
+
 		this.editor.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent mouseEvent) {
@@ -122,17 +124,12 @@ public class EditorPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				switch (e.getButton()) {
-					case MouseEvent.BUTTON3: // Right click
-						EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
-						break;
-
-					case 4: // Back navigation
-						gui.getController().openPreviousReference();
-						break;
-
-					case 5: // Forward navigation
-						gui.getController().openNextReference();
-						break;
+					case MouseEvent.BUTTON3 -> // Right click
+							EditorPanel.this.editor.setCaretPosition(EditorPanel.this.editor.viewToModel(e.getPoint()));
+					case 4 -> // Back navigation
+							gui.getController().openPreviousReference();
+					case 5 -> // Forward navigation
+							gui.getController().openNextReference();
 				}
 				EditorPanel.this.mouseIsPressed = false;
 			}
@@ -475,9 +472,8 @@ public class EditorPanel {
 							EditableType t = EditableType.fromEntry(reference.entry);
 							boolean editable = t == null || this.gui.isEditable(t);
 							tokenPainter = editable ? painter : proposedPainter;
+							if (warningChecker.useWarningPainter(reference, token, this.editor)) {
 
-							if (!followsStyle(reference)) {
-								this.gui.addWarningClass(getClassParent(reference));
 								tokenPainter = warningPainter;
 							}
 						} else {
@@ -492,68 +488,6 @@ public class EditorPanel {
 
 		this.editor.validate();
 		this.editor.repaint();
-	}
-
-	public ClassEntry getClassParent(EntryReference<Entry<?>, Entry<?>> reference) {
-		// runs through the reference' parents until it finds a class
-		Entry<?> classEntry = reference.entry;
-		while (!(classEntry instanceof ClassEntry)) {
-			classEntry = reference.entry.getParent();
-		}
-		return (ClassEntry) classEntry;
-	}
-
-	public boolean followsStyle(EntryReference<Entry<?>, Entry<?>> reference) {
-		// get the mapper and get the mapped name from the mapper
-		EntryRemapper mapper = this.controller.project.getMapper();
-		String name = mapper.getDeobfMapping(reference.entry).targetName();
-		if (name != null) {
-			if (reference.entry instanceof ClassEntry) {
-				// remove the path (net/minecraft/ ... /) from the class name
-				return followsClassStyle(reference, name.substring(name.lastIndexOf('/') + 1));
-			} else if (reference.entry instanceof MethodEntry) {
-				return followsMethodStyle(reference, name);
-			} else if (reference.entry instanceof FieldEntry) {
-				return followsFieldStyle(reference, name);
-			} else if (reference.entry instanceof LocalVariableEntry) {
-				return followsArgumentStyle(reference, name);
-			} else {
-				return true;
-			}
-		} else {
-			// return true if the reference isn't mapped yet
-			return true;
-		}
-	}
-
-	public boolean followsClassStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-		return Character.isUpperCase(name.charAt(0));
-	}
-
-	public boolean followsMethodStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-		if (((MethodEntry)reference.entry).isConstructor()) {
-			return followsClassStyle(reference, name);
-		} else {
-			return Character.isLowerCase(name.charAt(0));
-		}
-	}
-
-	public boolean followsArgumentStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-		return Character.isLowerCase(name.charAt(0));
-	}
-
-	public boolean followsFieldStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-		EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
-		FieldEntry fieldEntry = (FieldEntry)reference.entry;
-		AccessFlags accessFlags = entryIndex.getFieldAccess(fieldEntry);
-		String fieldType = fieldEntry.getDesc().toString();
-
-		// Static Final fields follow a different naming style than other fields excluding atomics
-		if (accessFlags != null && accessFlags.isFinal() && accessFlags.isStatic() && !fieldType.contains("Atomic")) {
-			return name == null || name.equals(name.toUpperCase());
-		} else {
-			return Character.isLowerCase(name.charAt(0));
-		}
 	}
 
 	private void addHighlightedToken(Token token, HighlightPainter tokenPainter) {
