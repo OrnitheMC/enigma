@@ -1,0 +1,5 @@
+CLASS net/minecraft/class_160
+	METHOD method_8629 doThing (Lnet/minecraft/class_104;III)I
+		ARG 1 arg1
+		ARG 2 x
+		LOCAL 5 local

@@ -121,8 +121,17 @@ public class EntryRemapper {
 
 	@Nonnull
 	public EntryMapping getDeobfMapping(Entry<?> entry) {
-		EntryMapping entryMapping = obfToDeobf.get(entry);
-		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
+		Collection<Entry<?>> resolvedEntries = obfResolver.resolveEntry(entry, ResolutionStrategy.RESOLVE_ROOT);
+
+		for (Entry<?> resolvedEntry : resolvedEntries) {
+			EntryMapping mapping = obfToDeobf.get(resolvedEntry);
+
+			if (mapping != null) {
+				return mapping;
+			}
+		}
+
+		return EntryMapping.DEFAULT;
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {

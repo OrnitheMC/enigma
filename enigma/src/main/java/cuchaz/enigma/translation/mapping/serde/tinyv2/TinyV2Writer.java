@@ -114,7 +114,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
 			Entry<?> entry = child.getEntry();
 			if (entry instanceof LocalVariableEntry) {
-				writeParameter(writer, child);
+				writeVariable(writer, child);
 			}
 			// TODO write actual local variables
 		}
@@ -145,15 +145,21 @@ public final class TinyV2Writer implements MappingsWriter {
 		writeComment(writer, mapping, 2);
 	}
 
-	private void writeParameter(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
+	private void writeVariable(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
 		if (node.getValue() == null || node.getValue().equals(EntryMapping.DEFAULT))
 			return; // Shortcut
 
+		LocalVariableEntry entry = (LocalVariableEntry) node.getEntry();
+
 		writer.print(indent(2));
-		writer.print("p\t");
-		writer.print(((LocalVariableEntry) node.getEntry()).getIndex());
+		if (entry.isArgument()) {
+			writer.print("p\t");
+		} else {
+			writer.print("v\t");
+		}
+		writer.print(entry.getIndex());
 		writer.print("\t");
-		writer.print(node.getEntry().getName());
+		writer.print(entry.getName());
 		writer.print("\t");
 		EntryMapping mapping = node.getValue();
 		if (mapping == null || mapping.targetName() == null) {
