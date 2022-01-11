@@ -23,4 +23,12 @@ public class Pair<A, B> {
                Objects.equals(a, ((Pair<?, ?>) o).a) &&
                Objects.equals(b, ((Pair<?, ?>) o).b);
     }
+
+    public A getKey() {
+        return this.a;
+    }
+
+    public B getValue() {
+        return this.b;
+    }
 }

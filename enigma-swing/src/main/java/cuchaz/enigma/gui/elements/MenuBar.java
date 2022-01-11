@@ -67,6 +67,7 @@ public class MenuBar {
 	private final JMenu helpMenu = new JMenu();
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
+	private final JMenuItem keyBindsItem = new JMenuItem();
 
 	private final Gui gui;
 
@@ -125,6 +126,7 @@ public class MenuBar {
 
 		this.helpMenu.add(this.aboutItem);
 		this.helpMenu.add(this.githubItem);
+		this.helpMenu.add(this.keyBindsItem);
 		ui.add(this.helpMenu);
 
 		this.saveMappingsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
@@ -133,6 +135,8 @@ public class MenuBar {
 		this.searchClassItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
 		this.searchMethodItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
 		this.searchFieldItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
+
+		this.keyBindsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
 
 		this.jarOpenItem.addActionListener(_e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(_e -> this.gui.getController().closeJar());
@@ -157,6 +161,7 @@ public class MenuBar {
 		this.startServerItem.addActionListener(_e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(_e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(_e -> this.onGithubClicked());
+		this.keyBindsItem.addActionListener(_e -> KeyBindDialog.show(this.gui.getFrame()));
 	}
 
 	public void updateUiState() {
@@ -218,6 +223,7 @@ public class MenuBar {
 		this.helpMenu.setText(I18n.translate("menu.help"));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
+		this.keyBindsItem.setText(I18n.translate("menu.help.keybinds"));
 	}
 
 	private void onOpenJarClicked() {
