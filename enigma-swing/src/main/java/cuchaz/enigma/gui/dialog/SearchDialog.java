@@ -165,6 +165,9 @@ public class SearchDialog {
 		dialog.setContentPane(contentPane);
 		dialog.setSize(ScaleUtil.getDimension(400, 500));
 		dialog.setLocationRelativeTo(parent.getFrame());
+
+		contentPane.requestFocus();
+		searchField.requestFocus();
 	}
 
 	public void show(SearchDialog.SearchType searchType) {

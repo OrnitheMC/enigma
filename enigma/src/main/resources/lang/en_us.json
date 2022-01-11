@@ -228,5 +228,13 @@
 	"crash.export": "Export",
 	"crash.ignore": "Ignore",
 	"crash.exit": "Exit",
-	"crash.exit.warning": "If you choose exit, you will lose any unsaved work."
+	"crash.exit.warning": "If you choose exit, you will lose any unsaved work.",
+
+	"warning.static_final_field": "static final fields should be UPPER_SNAKE_CASE",
+	"warning.class": "Classes should be PascalCase",
+	"warning.field": "Fields should be camelCase",
+	"warning.atomic_field": "atomic fields should always be camelCase",
+	"warning.method": "Methods should be camelCase",
+	"warning.argument": "Arguments should be camelCase",
+	"warning.unknown": "Unknown warning"
 }
