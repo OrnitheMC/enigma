@@ -133,11 +133,6 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return Objects.requireNonNull(last, () -> String.format("%s has no top level class?", this));
 	}
 
-	/**
-	 * Returns the ancestry of this entry, including itself.
-	 * The entries are listed in order from furthest to closest.
-	 * (i.e. this entry is last in the lis)
-	 */
 	default List<Entry<?>> getAncestry() {
 		P parent = getParent();
 		List<Entry<?>> entries = new ArrayList<>();

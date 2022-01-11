@@ -15,7 +15,6 @@ import cuchaz.enigma.translation.VoidTranslator;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class IndexEntryResolver implements EntryResolver {
@@ -40,14 +39,7 @@ public class IndexEntryResolver implements EntryResolver {
 			return Collections.emptySet();
 		}
 
-		// Local variables belong to a specific method implementation,
-		// compared to parameters, which belong to the method declaration
-		if (entry instanceof LocalVariableEntry l && !l.isArgument()) {
-			return Collections.singleton(entry);
-		}
-
 		Entry<ClassEntry> classChild = getClassChild(entry);
-
 		if (classChild != null && !(classChild instanceof ClassEntry)) {
 			AccessFlags access = entryIndex.getEntryAccess(classChild);
 
