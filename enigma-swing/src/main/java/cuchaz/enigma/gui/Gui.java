@@ -76,7 +76,7 @@ public class Gui {
 	private final EditorTabbedPane editorTabbedPane;
 
 	private final JPanel classesPanel = new JPanel(new BorderLayout());
-	private final JSplitPane splitObfDeObf;
+	// private final JSplitPane splitObfDeObf;
 	private final JSplitPane splitClasses;
 	private final JTabbedPane tabs = new JTabbedPane();
 	private final CollapsibleTabbedPane logTabs = new CollapsibleTabbedPane(JTabbedPane.BOTTOM);
@@ -115,8 +115,12 @@ public class Gui {
 		this.implementationsTree = new ImplementationsTree(this);
 		this.callsTree = new CallsTree(this);
 		this.editorTabbedPane = new EditorTabbedPane(this);
+		/*
 		this.splitObfDeObf = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.obfPanel, this.deobfPanel);
-		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, splitObfDeObf, this.warningPanel);
+		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, thissplitObfDeObf, this.warningPanel);
+		*/
+
+		this.splitClasses = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, this.obfPanel, this.deobfPanel);
 
 		this.setupUi();
 
