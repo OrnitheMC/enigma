@@ -21,7 +21,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import cuchaz.enigma.api.service.ObfuscationTestService;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -42,7 +41,6 @@ import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
@@ -133,8 +131,7 @@ public class EnigmaProject {
 
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry obfMethodEntry) {
-			// HACKHACK: Object methods are not obfuscated identifiers
-			// HACKHACKHACK: hardcoded obfuscation format
+			// HACKHACK: hardcoded obfuscation format
 			String name = obfMethodEntry.getName();
 			String sig = obfMethodEntry.getDesc().toString();
 			//TODO replace with a map or check if declaring class is java.lang.Object
@@ -171,7 +168,6 @@ public class EnigmaProject {
 
 				}
 			}
-
 		} else if (obfEntry instanceof LocalVariableEntry && !((LocalVariableEntry) obfEntry).isArgument()) {
 			return false;
 		}
