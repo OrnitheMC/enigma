@@ -151,7 +151,7 @@ public class WarningChecker {
         String obfName = reference.entry.getName();
         if (!followsStyle(reference)) {
             this.gui.addWarningClass(WarningChecker.getClassParent(reference));
-            this.editor.setTooltipPosition(token, this.warningType.getMessage(), obfName);
+            this.editor.setTooltipPosition(token, this.warningType.getMessage(), obfName, TooltipEditorPane.TooltipType.WARNING);
             return true;
         } else if (this.editor.removeTooltip(obfName) != null){
             this.gui.removeWarningClass(WarningChecker.getClassParent(reference));

@@ -468,6 +468,7 @@ public class EditorPanel {
 						EntryReference<Entry<?>, Entry<?>> reference = this.getReference(token);
 						BoxHighlightPainter tokenPainter;
 
+
 						if (reference != null) {
 							EditableType t = EditableType.fromEntry(reference.entry);
 							boolean editable = t == null || this.gui.isEditable(t);
