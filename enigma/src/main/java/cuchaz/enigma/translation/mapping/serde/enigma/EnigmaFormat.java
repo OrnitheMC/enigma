@@ -6,5 +6,4 @@ public class EnigmaFormat {
 	public static final String FIELD = "FIELD";
 	public static final String METHOD = "METHOD";
 	public static final String PARAMETER = "ARG";
-	public static final String LOCAL_VARIABLE = "LOCAL";
 }

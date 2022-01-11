@@ -68,9 +68,7 @@ public enum TinyMappingsReader implements MappingsReader {
 			case "METHOD":
 				return parseMethod(tokens);
 			case "MTH-ARG":
-				return parseVariable(tokens, true);
-			case "MTH-LOCAL":
-				return parseVariable(tokens, false);
+				return parseArgument(tokens);
 			default:
 				throw new RuntimeException("Unknown token '" + key + "'!");
 		}
@@ -104,14 +102,14 @@ public enum TinyMappingsReader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new EntryMapping(mapping));
 	}
 
-	private MappingPair<LocalVariableEntry, EntryMapping> parseVariable(String[] tokens, boolean parameter) {
+	private MappingPair<LocalVariableEntry, EntryMapping> parseArgument(String[] tokens) {
 		ClassEntry ownerClass = new ClassEntry(tokens[1]);
 		MethodDescriptor ownerDescriptor = new MethodDescriptor(tokens[2]);
 		MethodEntry ownerMethod = new MethodEntry(ownerClass, tokens[3], ownerDescriptor);
 		int variableIndex = Integer.parseInt(tokens[4]);
 
 		String mapping = tokens[5];
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", parameter, null);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", true, null);
 		return new MappingPair<>(obfuscatedEntry, new EntryMapping(mapping));
 	}
 }
