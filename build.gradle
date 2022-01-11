@@ -26,8 +26,8 @@ subprojects {
         testImplementation 'org.hamcrest:hamcrest:2.2'
     }
 
-    group = 'cuchaz'
-    version = '1.0.1-feather'
+    group = 'net.ornithemc'
+    version = '1.0.0'
 
     version = version + (System.getenv("GITHUB_ACTIONS") ? "" : "+local")
 
