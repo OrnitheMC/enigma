@@ -12,6 +12,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+
 import org.benf.cfr.reader.bytecode.analysis.loc.HasByteCodeLoc;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaRefTypeInstance;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaTypeInstance;
@@ -287,6 +288,7 @@ public class EnigmaDumper extends StringStreamDumper {
     @Override
     public Dumper variableName(String name, NamedVariable variable, boolean defines) {
         // todo catch var declarations in the future
+        // will need changes to CFR
         return super.variableName(name, variable, defines);
     }
 
