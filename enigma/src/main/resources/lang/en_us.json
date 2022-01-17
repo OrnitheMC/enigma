@@ -70,6 +70,9 @@
 	"menu.help.keybinds.title": "%s - Keybindings",
 	"menu.help.keybinds.close": "Close",
 	"menu.help.keybinds.test": "Test Keybing = ",
+	"menu.advanced": "Advanced",
+	"menu.advanced.map_locals.enable": "Enable Mapping Locals",
+	"menu.advanced.map_locals.disable": "Disable Mapping Locals",
 
 	"popup_menu.rename": "Rename",
 	"popup_menu.paste": "Paste text",

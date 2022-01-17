@@ -22,6 +22,7 @@ import javax.swing.tree.TreePath;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.google.common.collect.Lists;
 
+import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.translation.representation.AccessFlags;
@@ -130,6 +131,12 @@ public class GuiUtil {
     }
 
     public static Icon getClassIcon(Gui gui, ClassEntry entry) {
+        EnigmaProject project = gui.getController().project;
+
+        if (project == null) {
+            return CLASS_ICON;
+        }
+
         EntryIndex entryIndex = gui.getController().project.getJarIndex().getEntryIndex();
         AccessFlags access = entryIndex.getClassAccess(entry);
 

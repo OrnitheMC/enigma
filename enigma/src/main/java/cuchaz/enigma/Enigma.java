@@ -43,6 +43,8 @@ public class Enigma {
     private final EnigmaProfile profile;
 	private final EnigmaServices services;
 
+	private boolean mapLocals;
+
 	private Enigma(EnigmaProfile profile, EnigmaServices services) {
 		this.profile = profile;
 		this.services = services;
@@ -74,6 +76,18 @@ public class Enigma {
 
 	public EnigmaServices getServices() {
 		return services;
+	}
+
+	public boolean mapLocals() {
+		return mapLocals;
+	}
+
+	public void setMapLocals(boolean mapLocals) {
+		this.mapLocals = mapLocals;
+	}
+
+	public void toggleMapLocals() {
+		this.mapLocals = !this.mapLocals;
 	}
 
 	public static class Builder {
