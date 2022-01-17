@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.representation.entry;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
@@ -84,8 +85,8 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry) {
-		return entry instanceof LocalVariableEntry && ((LocalVariableEntry) entry).parent.equals(parent);
+	public boolean canConflictWith(Entry<?> entry, Function<Entry<?>, Boolean> isStatic) {
+		return entry instanceof LocalVariableEntry variableEntry && parent.equals(variableEntry.parent);
 	}
 
 	@Override

@@ -145,7 +145,14 @@ public class IndexEntryResolver implements EntryResolver {
 
 	@Override
 	public Set<Entry<?>> resolveEquivalentEntries(Entry<?> entry) {
+		// Locals belong to a specific method implementation,
+		// rather than being shared across all implementations.
+		if (entry instanceof LocalVariableEntry l && !l.isArgument()) {
+			return Collections.singleton(entry);
+		}
+
 		MethodEntry relevantMethod = entry.findAncestor(MethodEntry.class);
+
 		if (relevantMethod == null || !entryIndex.hasMethod(relevantMethod)) {
 			return Collections.singleton(entry);
 		}
