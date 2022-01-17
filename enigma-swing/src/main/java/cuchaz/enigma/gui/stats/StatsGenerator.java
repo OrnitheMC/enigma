@@ -68,7 +68,7 @@ public class StatsGenerator {
                         .orElseThrow(AssertionError::new);
 
                 ClassEntry clazz = root.getParent();
-                if (root == method && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
+                if (root == method && this.project.isRenamable(method) && this.mapper.deobfuscate(clazz).getPackageName().startsWith(topLevelPackageSlash)) {
                     if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
                         update(counts, method);
                         totalMappable++;
