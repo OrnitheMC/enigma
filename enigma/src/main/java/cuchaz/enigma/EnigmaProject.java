@@ -42,6 +42,7 @@ import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
@@ -146,6 +147,9 @@ public class EnigmaProject {
 			}
 
 			return false;
+		}
+		if (obfEntry instanceof LocalVariableEntry variable) {
+			return enigma.mapLocals() || variable.isArgument();
 		}
 
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);

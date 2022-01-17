@@ -64,6 +64,9 @@ public class MenuBar {
 	private final JMenuItem connectItem = new JMenuItem();
 	private final JMenuItem startServerItem = new JMenuItem();
 
+	private final JMenu advancedMenu = new JMenu();
+	private final JMenuItem mapLocalsItem = new JMenuItem();
+
 	private final JMenu helpMenu = new JMenu();
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
@@ -124,6 +127,9 @@ public class MenuBar {
 		this.collabMenu.add(this.startServerItem);
 		ui.add(this.collabMenu);
 
+		this.advancedMenu.add(this.mapLocalsItem);
+		ui.add(this.advancedMenu);
+
 		this.helpMenu.add(this.aboutItem);
 		this.helpMenu.add(this.githubItem);
 		this.helpMenu.add(this.keyBindsItem);
@@ -151,6 +157,8 @@ public class MenuBar {
 		this.exitItem.addActionListener(_e -> this.gui.close());
 		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
+
+		this.mapLocalsItem.addActionListener(_e -> this.toggleMapLocals());
 
 		this.searchItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.CLASS));
 		this.searchClassItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.CLASS));
@@ -183,6 +191,8 @@ public class MenuBar {
 		this.exportSourceItem.setEnabled(jarOpen);
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
+		this.mapLocalsItem.setEnabled(jarOpen);
+		this.mapLocalsItem.setText(I18n.translate(jarOpen && this.gui.getController().enigma.mapLocals() ? "menu.advanced.map_locals.disable" : "menu.advanced.map_locals.enable"));
 	}
 
 	public void retranslateUi() {
@@ -219,6 +229,9 @@ public class MenuBar {
 		this.collabMenu.setText(I18n.translate("menu.collab"));
 		this.connectItem.setText(I18n.translate("menu.collab.connect"));
 		this.startServerItem.setText(I18n.translate("menu.collab.server.start"));
+
+		this.advancedMenu.setText(I18n.translate("menu.advanced"));
+		this.mapLocalsItem.setText(I18n.translate("menu.advanced.map_locals.enable"));
 
 		this.helpMenu.setText(I18n.translate("menu.help"));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
@@ -327,6 +340,11 @@ public class MenuBar {
 //			UiConfig.save();
 //		}
 		FontDialog.display(gui.getFrame());
+	}
+
+	private void toggleMapLocals() {
+		this.gui.getController().enigma.toggleMapLocals();
+		this.onReloadAllClicked();
 	}
 
 	private void onSearchClicked(SearchDialog.SearchType searchType) {
