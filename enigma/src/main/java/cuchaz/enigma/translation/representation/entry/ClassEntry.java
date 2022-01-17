@@ -13,6 +13,7 @@ package cuchaz.enigma.translation.representation.entry;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -116,7 +117,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry) {
+	public boolean canConflictWith(Entry<?> entry, Function<Entry<?>, Boolean> isStatic) {
 		return true;
 	}
 
