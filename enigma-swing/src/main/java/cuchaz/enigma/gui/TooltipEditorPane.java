@@ -8,11 +8,12 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 
 public class TooltipEditorPane extends JEditorPane {
-    private final HashMap<String, Pair<LinkedHashSet<Rectangle>, String>> warningMap = new HashMap<>();
-    private final HashMap<String, Pair<LinkedHashSet<Rectangle>, String>> javadocMap = new HashMap<>();
+    private final HashMap<String, Pair<LinkedHashSet<Rectangle2D>, String>> warningMap = new HashMap<>();
+    private final HashMap<String, Pair<LinkedHashSet<Rectangle2D>, String>> javadocMap = new HashMap<>();
 
     public TooltipEditorPane() {
         // Register the component on the tooltip manager
@@ -24,8 +25,8 @@ public class TooltipEditorPane extends JEditorPane {
     @Override
     public String getToolTipText(MouseEvent event) {
         Point mousePosition = new Point(event.getX(), event.getY());
-        for (Pair<LinkedHashSet<Rectangle>, String> pair : warningMap.values()) {
-            for (Rectangle rectangle : pair.getKey()){
+        for (Pair<LinkedHashSet<Rectangle2D>, String> pair : warningMap.values()) {
+            for (Rectangle2D rectangle : pair.getKey()){
                 if (rectangle.contains(mousePosition)) {
                     return pair.getValue();
                 }
@@ -34,21 +35,34 @@ public class TooltipEditorPane extends JEditorPane {
         return super.getToolTipText(event);
     }
 
-    public void setTooltipPosition(Token token, String message, String obfName, TooltipType type) {
+    public void setTokenTooltip(Token token, String message, String obfName) {
         try {
-            Rectangle start = this.modelToView(token.start);
-            Rectangle end = this.modelToView(token.end);
+            Rectangle2D start = this.modelToView2D(token.start);
+            Rectangle2D end = this.modelToView2D(token.end);
             if (start == null || end == null) {
                 return;
             }
-            putInMapByType(type, start.union(end), message, obfName);
+            putInMapByType(TooltipType.WARNING, start.createUnion(end), message, obfName);
         } catch (BadLocationException ex) {
             System.out.println("bad location");
         }
     }
 
-    private void putInMapByType(TooltipType type, Rectangle tokenBox, String message, String obfName) {
-        HashMap<String, Pair<LinkedHashSet<Rectangle>, String>> map;
+    public void setJavadocTooltip(Token token, String message, String obfName) {
+        try {
+            Rectangle2D start = this.modelToView2D(token.start);
+            Rectangle2D end = this.modelToView2D(token.end);
+            if (start == null || end == null) {
+                return;
+            }
+            putInMapByType(TooltipType.JAVADOC, start.createUnion(end), message, obfName);
+        } catch (BadLocationException ex) {
+            System.out.println("bad location");
+        }
+    }
+
+    private void putInMapByType(TooltipType type, Rectangle2D tokenBox, String message, String obfName) {
+        HashMap<String, Pair<LinkedHashSet<Rectangle2D>, String>> map;
         switch (type) {
             case JAVADOC -> map = this.javadocMap;
             case WARNING -> map = this.warningMap;
@@ -61,7 +75,7 @@ public class TooltipEditorPane extends JEditorPane {
         }
     }
 
-    public Pair<LinkedHashSet<Rectangle>, String> removeTooltip(String deObfName) {
+    public Pair<LinkedHashSet<Rectangle2D>, String> removeTooltip(String deObfName) {
         return warningMap.remove(deObfName);
     }
 

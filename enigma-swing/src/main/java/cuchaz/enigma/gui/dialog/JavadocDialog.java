@@ -11,10 +11,7 @@
 
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -39,12 +36,14 @@ public class JavadocDialog {
 	private final JDialog ui;
 	private final GuiController controller;
 	private final Entry<?> entry;
+	private final JFrame parent;
 
 	private final ValidatableTextArea text;
 
 	private final ValidationContext vc = new ValidationContext();
 
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
+		this.parent = parent;
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
 		this.controller = controller;
 		this.entry = entry;
@@ -58,6 +57,7 @@ public class JavadocDialog {
 		this.text.setText(preset);
 		this.text.setTabSize(2);
 		contentPane.add(new JScrollPane(this.text), BorderLayout.CENTER);
+
 		this.text.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
@@ -84,13 +84,21 @@ public class JavadocDialog {
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		buttonsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("javadocs.instruction"))));
+
 		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
 		cancelButton.addActionListener(event -> close());
 		buttonsPanel.add(cancelButton);
+
 		JButton saveButton = new JButton(I18n.translate("prompt.save"));
 		saveButton.addActionListener(event -> doSave());
 		buttonsPanel.add(saveButton);
+
+		JButton renderButton = new JButton(I18n.translate("render"));
+		renderButton.addActionListener(event -> render());
+		buttonsPanel.add(renderButton);
+
 		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
+
 
 		// tags panel
 		JMenuBar tagsMenu = new JMenuBar();
@@ -150,6 +158,10 @@ public class JavadocDialog {
 		save();
 		if (!vc.canProceed()) return;
 		close();
+	}
+
+	public void render() {
+		RenderedJavadocDialog.show(this.parent, this.controller, this.text.getText());
 	}
 
 	public void close() {
