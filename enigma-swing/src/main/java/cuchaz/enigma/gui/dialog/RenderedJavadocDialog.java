@@ -8,6 +8,7 @@ import cuchaz.enigma.gui.TooltipEditorPane;
 import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.gui.util.JavadocAnnotationUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
@@ -31,7 +32,7 @@ public class RenderedJavadocDialog {
     public RenderedJavadocDialog(JFrame parent, GuiController controller, String renderText) {
         this.ui = new JDialog(parent, I18n.translate("javadocs.render"));
         this.controller = controller;
-        this.renderText =  renderText.replaceAll("\n", "<br>");
+        this.renderText = JavadocAnnotationUtil.convertRawJavadoc(renderText.replaceAll("\n", "<br>"));
         this.renderedPane.setContentType("text/html");
         this.renderedPane.setEditable(false);
 
