@@ -44,15 +44,15 @@ public class JavadocAnnotationUtil {
     }
 
 
-    public static String returnToHtml(List<String> entries) {
+    public static String returnToHtml(LinkedList<String> entries) {
         return JavadocTags.RETURN.getTranslation() + entries.get(0).replace("@return ", "");
     }
 
-    public static String paramsToHtml(List<String> entries) {
+    public static String paramsToHtml(LinkedList<String> entries) {
         return javadocList(entries, JavadocTags.PARAM);
     }
 
-    public static String seeToHtml(List<String> entries) {
+    public static String seeToHtml(LinkedList<String> entries) {
         StringBuilder stringBuilder = new StringBuilder(JavadocTags.SEE.getTranslation());
         int index = 0;
         for (String entry : entries) {
@@ -65,15 +65,15 @@ public class JavadocAnnotationUtil {
         return stringBuilder.toString();
     }
 
-    public static String throwsToHtml(List<String> entries) {
+    public static String throwsToHtml(LinkedList<String> entries) {
         return javadocList(entries, JavadocTags.THROWS, true);
     }
 
-    public static String javadocList(List<String> entries, JavadocTags tag) {
+    public static String javadocList(LinkedList<String> entries, JavadocTags tag) {
         return javadocList(entries, tag, false);
     }
 
-    public static String javadocList(List<String> entries, JavadocTags tag, Boolean link) {
+    public static String javadocList(LinkedList<String> entries, JavadocTags tag, Boolean link) {
         StringBuilder stringBuilder = new StringBuilder(tag.getTranslation());
         int index = 0;
         for (String entry : entries) {
@@ -103,7 +103,6 @@ public class JavadocAnnotationUtil {
     public static String convertRawJavadoc(String javadoc) {
         javadoc = setGreen(javadoc);
         HashMap<JavadocTags, LinkedList<String>> lineMatches = getLineMatches(javadoc);
-        javadoc = removeTagsFromJavadoc(javadoc, lineMatches);
         HashMap<JavadocTags, LinkedList<String>> inlineMatches = getInlineMatches(new HashMap<>(), javadoc);
         for (JavadocTags tag : inlineMatches.keySet()) {
             for (String match : inlineMatches.get(tag)) {
@@ -115,15 +114,6 @@ public class JavadocAnnotationUtil {
             }
         }
         javadoc = addTagsToEnd(javadoc, lineMatches);
-        return javadoc;
-    }
-
-    public static String removeTagsFromJavadoc(String javadoc, HashMap<JavadocTags, LinkedList<String>> lineMatches) {
-        for (JavadocTags tag : lineMatches.keySet()) {
-            for (String line : lineMatches.get(tag)) {
-                javadoc = javadoc.replace(line, "");
-            }
-        }
         return javadoc;
     }
 
