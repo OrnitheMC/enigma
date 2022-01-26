@@ -1,22 +1,27 @@
 package cuchaz.enigma.gui.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JavadocAnnotationUtil {
-    public static final String LINK_FORMAT = "<a href=\"\">%s</a>";
-    public static final String INLINE_FORMAT = "(\\{@%s ([a-zA-Z]*|\\.|#|(\\(([a-zA-Z]*|([a-zA-Z]* ))*\\)))*\\})";
-    public static final String OTHER_FORMAT = "%s";
+    public static final String LINK_FORMAT = "<a href=\"\" style=\"text-decoration: none\">%s</a>";
+    public static final Pattern SEE_PATTERN = Pattern.compile("(@see ([a-zA-Z]*)(\\.[a-zA-Z]+)*((\\.|#| )[a-zA-Z]+)(\\((([a-zA-Z]*(( [a-zA-Z]*)?, ))*[a-zA-Z]*( [a-zA-Z]+)?)\\))?)");
+    public static final Pattern LINK_PATTERN = Pattern.compile("(?<=\\{@link )(([a-zA-Z]*)(\\.[a-zA-Z]+)*((\\.|#| )[a-zA-Z]+)(\\((([a-zA-Z]*(( [a-zA-Z]*)?, ))*[a-zA-Z]*( [a-zA-Z]+)?)\\))?)(?=\\s*})");
+    public static final Pattern LINKPLAIN_PATTERN = Pattern.compile("(?<=\\{@linkplain )(([a-zA-Z]*)(\\.[a-zA-Z]+)*((\\.|#| )[a-zA-Z]+)(\\((([a-zA-Z]*(( [a-zA-Z]*)?, ))*[a-zA-Z]*( [a-zA-Z]+)?)\\))?)(?=\\s*})");
+    public static final Pattern CODE_PATTERN = Pattern.compile("(?<=\\{@code)(.|[\\s])*?(?=})");
+    public static final Pattern OTHER_PATTERN = Pattern.compile("[\\s\\S]*");
+    public static final JavadocTags[] NON_INLINES = {JavadocTags.PARAM, JavadocTags.RETURN, JavadocTags.THROWS, JavadocTags.SEE};
 
     public static String generateLink(String text) {
-        System.out.println(text);
         if (text.contains("#")) {
-            return  String.format(LINK_FORMAT, text.substring(text.lastIndexOf('#') + 1));
-        } else if (text.contains(".")) {
-            return String.format(LINK_FORMAT, text.substring(text.lastIndexOf('.') + 1));
+            if (text.startsWith("#")) {
+                return  String.format(LINK_FORMAT, text.replace("#", "") );
+            } else {
+                return  String.format(LINK_FORMAT, text.replace("#", ".") );
+            }
+        } else if (text.contains(" ")) {
+            return String.format(LINK_FORMAT, text.substring(text.indexOf(' ') + 1));
         } else {
             return String.format(LINK_FORMAT, text);
         }
@@ -31,73 +36,167 @@ public class JavadocAnnotationUtil {
     }
 
     public static String linkToHtml(String text) {
-        if (!text.startsWith("{@link") || !text.endsWith("}")) {
-            return "";
-        } else {
-            return generateLink(htmlSuperscript(text.replaceAll("(\\{@link|}| )", "")));
-
-        }
+        return generateLink(text);
     }
 
     public static String linkPlainToHtml(String text) {
-        if (!text.startsWith("{@linkplain") || !text.endsWith("}")) {
-            return "";
-        } else {
-            return generateLink(text.replace("{@linkplain", "").replace("}", ""));
+        return generateLink(text);
+    }
+
+
+    public static String returnToHtml(List<String> entries) {
+        return JavadocTags.RETURN.getTranslation() + entries.get(0).replace("@return ", "");
+    }
+
+    public static String paramsToHtml(List<String> entries) {
+        return javadocList(entries, JavadocTags.PARAM);
+    }
+
+    public static String seeToHtml(List<String> entries) {
+        StringBuilder stringBuilder = new StringBuilder(JavadocTags.SEE.getTranslation());
+        int index = 0;
+        for (String entry : entries) {
+            if (index != 0) {
+                stringBuilder.append(", ");
+            }
+            stringBuilder.append(htmlSuperscript(generateLink(entry.replace(JavadocTags.SEE.getText() + " ", ""))));
+            index++;
         }
+        return stringBuilder.toString();
     }
 
-    public static String codeToHtml(String text) {
-        return "";
+    public static String throwsToHtml(List<String> entries) {
+        return javadocList(entries, JavadocTags.THROWS, true);
     }
 
-    public static String returnToHtml(String text) {
-        return "";
+    public static String javadocList(List<String> entries, JavadocTags tag) {
+        return javadocList(entries, tag, false);
     }
 
-    public static String seeHtml(String text) {
-        return "";
+    public static String javadocList(List<String> entries, JavadocTags tag, Boolean link) {
+        StringBuilder stringBuilder = new StringBuilder(tag.getTranslation());
+        int index = 0;
+        for (String entry : entries) {
+            if (index != 0) {
+                stringBuilder.append("<br>").append(new String(new char[tag.getTranslation().length()*2 - 2]).replace("\0", "&nbsp;"));
+            }
+            if (link) {
+                entry = entry.replace(tag.getText() + " ", "");
+                String toLink = entry.substring(0, entry.indexOf(" "));
+                stringBuilder.append(entry.replaceFirst(toLink, generateLink(toLink)));
+            } else {
+                stringBuilder.append(entry.replace(tag.getText() + " ", "").replaceFirst(" ", " - "));
+            }
+            index++;
+        }
+        return stringBuilder.toString();
     }
 
-    public static String throwsToHtml(String text) {
-        return "";
+    public static String setGreen(String javadoc) {
+        return setDefaultColor(javadoc, "green");
+    }
+
+    public static String setDefaultColor(String javadoc, String color) {
+        return String.format("<body style=\"color:%s\">", color) + javadoc;
     }
 
     public static String convertRawJavadoc(String javadoc) {
-        HashSet<String> matches = getAllMatches(new HashSet<>(), javadoc);
-        for (String match : matches) {
-            javadoc = javadoc.replace(match, linkToHtml(match));
+        javadoc = setGreen(javadoc);
+        HashMap<JavadocTags, LinkedList<String>> lineMatches = getLineMatches(javadoc);
+        javadoc = removeTagsFromJavadoc(javadoc, lineMatches);
+        HashMap<JavadocTags, LinkedList<String>> inlineMatches = getInlineMatches(new HashMap<>(), javadoc);
+        for (JavadocTags tag : inlineMatches.keySet()) {
+            for (String match : inlineMatches.get(tag)) {
+                switch (tag) {
+                    case LINK -> javadoc = javadoc.replace("{" + tag.getText() + " " + match.trim() + "}", linkToHtml(match));
+                    case LINKPLAIN -> javadoc = javadoc.replace("{" + tag.getText() + " " + match.trim() + "}", linkPlainToHtml(match));
+                    case CODE -> javadoc = javadoc.replace("{" + tag.getText() + match + "}", match.trim());
+                }
+            }
+        }
+        javadoc = addTagsToEnd(javadoc, lineMatches);
+        return javadoc;
+    }
+
+    public static String removeTagsFromJavadoc(String javadoc, HashMap<JavadocTags, LinkedList<String>> lineMatches) {
+        for (JavadocTags tag : lineMatches.keySet()) {
+            for (String line : lineMatches.get(tag)) {
+                javadoc = javadoc.replace(line, "");
+            }
         }
         return javadoc;
     }
 
-    public static HashSet<String> getAllMatches(HashSet<String> matches, String javadoc) {
-        addMatches(matches, javadoc, JavadocTags.LINK.getPattern());
-        addMatches(matches, javadoc, JavadocTags.LINKPLAIN.getPattern());
+    public static String addTagsToEnd(String javadoc, HashMap<JavadocTags, LinkedList<String>> lineMatches) {
+        StringBuilder javadocBuilder = new StringBuilder(javadoc);
+        for (JavadocTags tag : NON_INLINES) {
+            if (lineMatches.containsKey(tag)) {
+                javadocBuilder.append("<br>");
+                switch (tag) {
+                    case PARAM -> javadocBuilder.append(paramsToHtml(lineMatches.get(tag)));
+                    case RETURN -> javadocBuilder.append(returnToHtml(lineMatches.get(tag)));
+                    case THROWS -> javadocBuilder.append(throwsToHtml(lineMatches.get(tag)));
+                    case SEE -> javadocBuilder.append(seeToHtml(lineMatches.get(tag)));
+                }
+            }
+        }
+        return javadocBuilder.toString();
+    }
+
+    public static HashMap<JavadocTags, LinkedList<String>> getLineMatches(String javadoc) {
+        HashMap<JavadocTags, LinkedList<String>> inlines = new HashMap<>();
+        String[] lines = javadoc.split("\n");
+        for (String line : lines) {
+            for (JavadocTags tag : NON_INLINES) {
+                if (line.startsWith(tag.getText())) {
+                    if (!inlines.containsKey(tag)) {
+                        inlines.put(tag, new LinkedList<>(Arrays.asList(line)));
+                    } else {
+                        inlines.get(tag).add(line);
+                    }
+                }
+            }
+        }
+        return inlines;
+    }
+
+    public static HashMap<JavadocTags, LinkedList<String>> getInlineMatches(HashMap<JavadocTags, LinkedList<String>> matches, String javadoc) {
+        addMatches(matches, javadoc, JavadocTags.LINK);
+        addMatches(matches, javadoc, JavadocTags.LINKPLAIN);
+        addMatches(matches, javadoc, JavadocTags.CODE);
         return matches;
     }
 
-    public static void addMatches(HashSet<String> matches, String javadoc, String expression) {
-        Matcher m = Pattern.compile(expression).matcher(javadoc);
+    public static void addMatches(HashMap<JavadocTags, LinkedList<String>> matches, String javadoc, JavadocTags tag) {
+        matches.put(tag, new LinkedList<>());
+        Matcher m = tag.getPattern().matcher(javadoc);
         while (m.find()) {
-            matches.add(m.group());
+            matches.get(tag).add(m.group());
         }
     }
 
     private enum JavadocTags {
-        CODE(true, String.format(INLINE_FORMAT, "code")),
-        LINK(true, String.format(INLINE_FORMAT, "link")),
-        LINKPLAIN(true, String.format(INLINE_FORMAT, "linkplain")),
-        RETURN(false, String.format(OTHER_FORMAT, "return")),
-        SEE(false, String.format(OTHER_FORMAT, "see")),
-        THROWS(false, String.format(OTHER_FORMAT, "throws"));
+        CODE(CODE_PATTERN),
+        LINK(LINK_PATTERN),
+        LINKPLAIN(LINKPLAIN_PATTERN),
+        PARAM("Params: "),
+        RETURN("Returns: "),
+        SEE("See Also: "),
+        THROWS("Throws: ");
 
         private final boolean inline;
-        private final String pattern;
+        private final Pattern pattern;
+        private String translation = "";
 
-        JavadocTags(boolean inline, String pattern) {
-            this.inline = inline;
+        JavadocTags(Pattern pattern) {
+            this.inline = false;
             this.pattern = pattern;
+        }
+
+        JavadocTags(String translated) {
+            this.inline = true;
+            this.pattern = null;
+            this.translation = translated;
         }
 
         public String getText() {
@@ -108,8 +207,12 @@ public class JavadocAnnotationUtil {
             return this.inline;
         }
 
-        public String getPattern() {
+        public Pattern getPattern() {
             return this.pattern;
+        }
+
+        public String getTranslation() {
+            return this.translation;
         }
     }
 }

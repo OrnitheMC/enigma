@@ -32,7 +32,7 @@ public class RenderedJavadocDialog {
     public RenderedJavadocDialog(JFrame parent, GuiController controller, String renderText) {
         this.ui = new JDialog(parent, I18n.translate("javadocs.render"));
         this.controller = controller;
-        this.renderText = JavadocAnnotationUtil.convertRawJavadoc(renderText.replaceAll("\n", "<br>"));
+        this.renderText = JavadocAnnotationUtil.convertRawJavadoc(renderText);
         this.renderedPane.setContentType("text/html");
         this.renderedPane.setEditable(false);
 
