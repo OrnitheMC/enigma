@@ -102,32 +102,27 @@ public class JavadocAnnotationUtil {
 
     public static String convertRawJavadoc(String javadoc) {
         javadoc = setGreen(javadoc);
-        HashMap<JavadocTags, LinkedList<String>> lineMatches = getLineMatches(javadoc);
-        HashMap<JavadocTags, LinkedList<String>> inlineMatches = getInlineMatches(new HashMap<>(), javadoc);
-        javadoc = processInlineMatches(javadoc, inlineMatches);
-        javadoc = processLineMatches(javadoc, lineMatches);
-
+        HashMap<JavadocTags, LinkedList<String>> matches = new HashMap<>();
+        getMatches(javadoc, matches);
+        javadoc = processMatches(javadoc, matches);
         return javadoc;
     }
 
-    public static String processInlineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> inlineMatches) {
-        for (JavadocTags tag : inlineMatches.keySet()) {
-            for (String match : inlineMatches.get(tag)) {
+    public static void getMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> matches) {
+        addLineMatches(javadoc, matches);
+        addInlineMatches(javadoc, matches);
+    }
+
+    public static String processMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> matches) {
+        javadoc = addTagsToEnd(javadoc, matches);
+        for (JavadocTags tag : matches.keySet()) {
+            for (String match : matches.get(tag)) {
                 switch (tag) {
                     case LINK -> javadoc = javadoc.replace("{" + tag.getText() + " " + match.trim() + "}", linkToHtml(match));
                     case LINKPLAIN -> javadoc = javadoc.replace("{" + tag.getText() + " " + match.trim() + "}", linkPlainToHtml(match));
                     case CODE -> javadoc = javadoc.replace("{" + tag.getText() + match + "}", match.trim());
+                    default -> javadoc = javadoc.replace(match, "");
                 }
-            }
-        }
-        return javadoc;
-    }
-
-    public static String processLineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> lineMatches) {
-        javadoc = addTagsToEnd(javadoc, lineMatches);
-        for (JavadocTags tag : lineMatches.keySet()) {
-            for (String match : lineMatches.get(tag)) {
-                javadoc = javadoc.replace(match, "");
             }
         }
         return javadoc;
@@ -149,28 +144,25 @@ public class JavadocAnnotationUtil {
         return javadocBuilder.toString();
     }
 
-    public static HashMap<JavadocTags, LinkedList<String>> getLineMatches(String javadoc) {
-        HashMap<JavadocTags, LinkedList<String>> inlines = new HashMap<>();
+    public static void addLineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> matches) {
         String[] lines = javadoc.split("\n");
         for (String line : lines) {
             for (JavadocTags tag : NON_INLINES) {
                 if (line.startsWith(tag.getText())) {
-                    if (!inlines.containsKey(tag)) {
-                        inlines.put(tag, new LinkedList<>(Arrays.asList(line)));
+                    if (!matches.containsKey(tag)) {
+                        matches.put(tag, new LinkedList<>(Arrays.asList(line)));
                     } else {
-                        inlines.get(tag).add(line);
+                        matches.get(tag).add(line);
                     }
                 }
             }
         }
-        return inlines;
     }
 
-    public static HashMap<JavadocTags, LinkedList<String>> getInlineMatches(HashMap<JavadocTags, LinkedList<String>> matches, String javadoc) {
+    public static void addInlineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> matches) {
         addMatches(matches, javadoc, JavadocTags.LINK);
         addMatches(matches, javadoc, JavadocTags.LINKPLAIN);
         addMatches(matches, javadoc, JavadocTags.CODE);
-        return matches;
     }
 
     public static void addMatches(HashMap<JavadocTags, LinkedList<String>> matches, String javadoc, JavadocTags tag) {
