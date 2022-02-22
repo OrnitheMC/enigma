@@ -14,6 +14,8 @@ package cuchaz.enigma.gui.dialog;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.*;
 import javax.swing.text.html.HTML;
@@ -37,6 +39,7 @@ public class JavadocDialog {
 	private final GuiController controller;
 	private final Entry<?> entry;
 	private final JFrame parent;
+	private RenderedJavadocDialog renderedJavadocDialog = null;
 
 	private final ValidatableTextArea text;
 
@@ -45,6 +48,7 @@ public class JavadocDialog {
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
 		this.parent = parent;
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
+		this.ui.addWindowListener(new renderedJavadocWindowListener());
 		this.controller = controller;
 		this.entry = entry;
 		this.text = new ValidatableTextArea(10, 40);
@@ -130,7 +134,7 @@ public class JavadocDialog {
 		}
 
 		// add html tags
-		JComboBox<String> htmlList = new JComboBox<String>();
+		JComboBox<String> htmlList = new JComboBox<>();
 		htmlList.setPreferredSize(new Dimension());
 		for (HTML.Tag htmlTag : HTML.getAllTags()) {
 			htmlList.addItem(htmlTag.toString());
@@ -152,6 +156,7 @@ public class JavadocDialog {
 
 	// Called when the "Save" button gets clicked.
 	public void doSave() {
+		this.closeChildren();
 		vc.reset();
 		validate();
 		if (!vc.canProceed()) return;
@@ -161,12 +166,20 @@ public class JavadocDialog {
 	}
 
 	public void render() {
-		RenderedJavadocDialog.show(this.parent, this.controller, this.text.getText());
+		this.renderedJavadocDialog = new RenderedJavadocDialog(this.parent, this.controller, this.text.getText());
+		this.renderedJavadocDialog.show();
 	}
 
 	public void close() {
 		this.ui.setVisible(false);
 		this.ui.dispose();
+
+	}
+
+	public void closeChildren() {
+		if (this.renderedJavadocDialog != null && this.renderedJavadocDialog.getUi().isVisible()) {
+			this.renderedJavadocDialog.close();
+		}
 	}
 
 	public void validate() {
@@ -177,7 +190,6 @@ public class JavadocDialog {
 
 	public void save() {
 		vc.setActiveElement(text);
-
 		controller.applyChange(vc, getEntryChange());
 	}
 
@@ -193,6 +205,45 @@ public class JavadocDialog {
 		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
+	}
+
+	private class renderedJavadocWindowListener implements WindowListener {
+		@Override
+		public void windowOpened(WindowEvent e) {
+
+		}
+
+		@Override
+		public void windowClosing(WindowEvent e) {
+			if (renderedJavadocDialog != null) {
+				closeChildren();
+			}
+		}
+
+		@Override
+		public void windowClosed(WindowEvent e) {
+
+		}
+
+		@Override
+		public void windowIconified(WindowEvent e) {
+
+		}
+
+		@Override
+		public void windowDeiconified(WindowEvent e) {
+
+		}
+
+		@Override
+		public void windowActivated(WindowEvent e) {
+
+		}
+
+		@Override
+		public void windowDeactivated(WindowEvent e) {
+
+		}
 	}
 
 	private enum JavadocTag {

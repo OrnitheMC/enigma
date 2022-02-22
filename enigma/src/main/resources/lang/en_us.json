@@ -167,6 +167,7 @@
 
 	"javadocs.edit": "Edit Javadocs",
 	"javadocs.instruction": "Edit javadocs here.",
+	"javadocs.render": "Rendered Javadoc",
 
 	"fonts.cat.default": "Default",
 	"fonts.cat.default2": "Default 2",
