@@ -104,6 +104,13 @@ public class JavadocAnnotationUtil {
         javadoc = setGreen(javadoc);
         HashMap<JavadocTags, LinkedList<String>> lineMatches = getLineMatches(javadoc);
         HashMap<JavadocTags, LinkedList<String>> inlineMatches = getInlineMatches(new HashMap<>(), javadoc);
+        javadoc = processInlineMatches(javadoc, inlineMatches);
+        javadoc = processLineMatches(javadoc, lineMatches);
+
+        return javadoc;
+    }
+
+    public static String processInlineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> inlineMatches) {
         for (JavadocTags tag : inlineMatches.keySet()) {
             for (String match : inlineMatches.get(tag)) {
                 switch (tag) {
@@ -113,7 +120,16 @@ public class JavadocAnnotationUtil {
                 }
             }
         }
+        return javadoc;
+    }
+
+    public static String processLineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> lineMatches) {
         javadoc = addTagsToEnd(javadoc, lineMatches);
+        for (JavadocTags tag : lineMatches.keySet()) {
+            for (String match : lineMatches.get(tag)) {
+                javadoc = javadoc.replace(match, "");
+            }
+        }
         return javadoc;
     }
 
