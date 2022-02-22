@@ -58,4 +58,8 @@ public class RenderedJavadocDialog {
         this.ui.setVisible(false);
         this.ui.dispose();
     }
+
+    public JDialog getUi() {
+        return this.ui;
+    }
 }

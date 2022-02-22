@@ -269,4 +269,8 @@ public class JavadocDialog {
 		}
 	}
 
+	public JDialog getUi() {
+		return this.ui;
+	}
+
 }
