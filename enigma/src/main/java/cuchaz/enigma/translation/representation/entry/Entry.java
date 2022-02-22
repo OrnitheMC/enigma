@@ -14,7 +14,7 @@ package cuchaz.enigma.translation.representation.entry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -113,7 +113,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * entry's containing class, or equal to a super class or super
 	 * interface or child class of this entry's containing class.
 	 */
-	boolean canConflictWith(Entry<?> entry, Function<Entry<?>, Boolean> isStatic);
+	boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic);
 
 	default ClassEntry getContainingClass() {
 		ClassEntry last = null;
