@@ -6,15 +6,12 @@ import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.TooltipEditorPane;
 import cuchaz.enigma.source.Token;
-import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.*;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class WarningChecker {
     private final GuiController controller;
@@ -151,7 +148,7 @@ public class WarningChecker {
         String obfName = reference.entry.getName();
         if (!followsStyle(reference)) {
             this.gui.addWarningClass(WarningChecker.getClassParent(reference));
-            this.editor.setTooltipPosition(token, this.warningType.getMessage(), obfName, TooltipEditorPane.TooltipType.WARNING);
+            this.editor.setTokenTooltip(token, this.warningType.getMessage(), obfName);
             return true;
         } else if (this.editor.removeTooltip(obfName) != null){
             this.gui.removeWarningClass(WarningChecker.getClassParent(reference));

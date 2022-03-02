@@ -11,12 +11,11 @@
 
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.*;
 import javax.swing.text.html.HTML;
@@ -35,17 +34,20 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class JavadocDialog {
-
 	private final JDialog ui;
 	private final GuiController controller;
 	private final Entry<?> entry;
+	private final JFrame parent;
+	private RenderedJavadocDialog renderedJavadocDialog = null;
 
 	private final ValidatableTextArea text;
 
 	private final ValidationContext vc = new ValidationContext();
 
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
+		this.parent = parent;
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
+		this.ui.addWindowListener(new RenderedJavadocWindowListener());
 		this.controller = controller;
 		this.entry = entry;
 		this.text = new ValidatableTextArea(10, 40);
@@ -58,6 +60,7 @@ public class JavadocDialog {
 		this.text.setText(preset);
 		this.text.setTabSize(2);
 		contentPane.add(new JScrollPane(this.text), BorderLayout.CENTER);
+
 		this.text.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
@@ -84,13 +87,21 @@ public class JavadocDialog {
 		JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		buttonsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("javadocs.instruction"))));
+
 		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
 		cancelButton.addActionListener(event -> close());
 		buttonsPanel.add(cancelButton);
+
 		JButton saveButton = new JButton(I18n.translate("prompt.save"));
 		saveButton.addActionListener(event -> doSave());
 		buttonsPanel.add(saveButton);
+
+		JButton renderButton = new JButton(I18n.translate("render"));
+		renderButton.addActionListener(event -> render());
+		buttonsPanel.add(renderButton);
+
 		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
+
 
 		// tags panel
 		JMenuBar tagsMenu = new JMenuBar();
@@ -122,7 +133,7 @@ public class JavadocDialog {
 		}
 
 		// add html tags
-		JComboBox<String> htmlList = new JComboBox<String>();
+		JComboBox<String> htmlList = new JComboBox<>();
 		htmlList.setPreferredSize(new Dimension());
 		for (HTML.Tag htmlTag : HTML.getAllTags()) {
 			htmlList.addItem(htmlTag.toString());
@@ -144,6 +155,7 @@ public class JavadocDialog {
 
 	// Called when the "Save" button gets clicked.
 	public void doSave() {
+		this.closeChildren();
 		vc.reset();
 		validate();
 		if (!vc.canProceed()) return;
@@ -152,9 +164,23 @@ public class JavadocDialog {
 		close();
 	}
 
+	public void render() {
+		this.renderedJavadocDialog = new RenderedJavadocDialog(this.parent, this.controller, this.text.getText());
+		this.renderedJavadocDialog.show();
+	}
+
 	public void close() {
 		this.ui.setVisible(false);
 		this.ui.dispose();
+	}
+
+	/**
+	 * Closes the all child windows. This window can only have {@link RenderedJavadocDialog} as a child.
+	 */
+	public void closeChildren() {
+		if (this.renderedJavadocDialog != null && this.renderedJavadocDialog.getUi().isVisible()) {
+			this.renderedJavadocDialog.close();
+		}
 	}
 
 	public void validate() {
@@ -165,7 +191,6 @@ public class JavadocDialog {
 
 	public void save() {
 		vc.setActiveElement(text);
-
 		controller.applyChange(vc, getEntryChange());
 	}
 
@@ -178,9 +203,33 @@ public class JavadocDialog {
 		String text = Strings.nullToEmpty(translatedReference.entry.getJavadocs());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.getNameableEntry(), text);
-		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
+	}
+
+
+	public JDialog getUi() {
+		return this.ui;
+	}
+
+	/**
+	 * A class implementing {@link WindowListener}. This listener is used to listen to the possible child window of the {@link JavadocDialog}.
+	 * When the {@link JavadocDialog} is closed, this listener checks if there is a {@link RenderedJavadocDialog} window opened this listener will also close this child window.
+	 * To reach this behaviour only one method needs to be implemented ({@link RenderedJavadocWindowListener#windowClosing}).
+	 * the other methods therefore have empty implementations.
+	 */
+	private class RenderedJavadocWindowListener implements WindowListener {
+		@Override
+		public void windowClosing(WindowEvent e) {
+			if (renderedJavadocDialog != null) closeChildren();
+		}
+
+		@Override public void windowOpened(WindowEvent e) {}
+		@Override public void windowClosed(WindowEvent e) {}
+		@Override public void windowIconified(WindowEvent e) {}
+		@Override public void windowDeiconified(WindowEvent e) {}
+		@Override public void windowActivated(WindowEvent e) {}
+		@Override public void windowDeactivated(WindowEvent e) {}
 	}
 
 	private enum JavadocTag {
@@ -205,5 +254,4 @@ public class JavadocDialog {
 			return this.inline;
 		}
 	}
-
 }
