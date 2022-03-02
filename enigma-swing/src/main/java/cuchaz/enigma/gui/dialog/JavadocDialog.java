@@ -34,7 +34,6 @@ import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class JavadocDialog {
-
 	private final JDialog ui;
 	private final GuiController controller;
 	private final Entry<?> entry;
@@ -48,7 +47,7 @@ public class JavadocDialog {
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
 		this.parent = parent;
 		this.ui = new JDialog(parent, I18n.translate("javadocs.edit"));
-		this.ui.addWindowListener(new renderedJavadocWindowListener());
+		this.ui.addWindowListener(new RenderedJavadocWindowListener());
 		this.controller = controller;
 		this.entry = entry;
 		this.text = new ValidatableTextArea(10, 40);
@@ -173,9 +172,11 @@ public class JavadocDialog {
 	public void close() {
 		this.ui.setVisible(false);
 		this.ui.dispose();
-
 	}
 
+	/**
+	 * Closes the all child windows. This window can only have {@link RenderedJavadocDialog} as a child.
+	 */
 	public void closeChildren() {
 		if (this.renderedJavadocDialog != null && this.renderedJavadocDialog.getUi().isVisible()) {
 			this.renderedJavadocDialog.close();
@@ -202,17 +203,25 @@ public class JavadocDialog {
 		String text = Strings.nullToEmpty(translatedReference.entry.getJavadocs());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.getNameableEntry(), text);
-		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
 	}
 
-	private class renderedJavadocWindowListener implements WindowListener {
+
+	public JDialog getUi() {
+		return this.ui;
+	}
+
+	/**
+	 * A class implementing {@link WindowListener}. This listener is used to listen to the possible child window of the {@link JavadocDialog}.
+	 * When the {@link JavadocDialog} is closed, this listener checks if there is a {@link RenderedJavadocDialog} window opened this listener will also close this child window.
+	 * To reach this behaviour only one method needs to be implemented ({@link RenderedJavadocWindowListener#windowClosing}).
+	 * the other methods therefore have empty implementations.
+	 */
+	private class RenderedJavadocWindowListener implements WindowListener {
 		@Override
 		public void windowClosing(WindowEvent e) {
-			if (renderedJavadocDialog != null) {
-				closeChildren();
-			}
+			if (renderedJavadocDialog != null) closeChildren();
 		}
 
 		@Override public void windowOpened(WindowEvent e) {}
@@ -245,9 +254,4 @@ public class JavadocDialog {
 			return this.inline;
 		}
 	}
-
-	public JDialog getUi() {
-		return this.ui;
-	}
-
 }

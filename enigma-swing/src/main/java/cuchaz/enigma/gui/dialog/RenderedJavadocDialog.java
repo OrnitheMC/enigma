@@ -14,6 +14,8 @@ public class RenderedJavadocDialog {
     private final JEditorPane renderedPane = new JEditorPane();
     private final JScrollPane renderedScrollPane;
     private final JDialog ui;
+    // controller currently unused but will be used when the javadoc window will also need to check
+    // whether a created link is actually valid.
     private final GuiController controller;
     private final String renderText;
 
@@ -28,11 +30,12 @@ public class RenderedJavadocDialog {
         Container contentPane = ui.getContentPane();
         contentPane.setLayout(new BorderLayout());
 
-
+        // create a scrollable window and set the text to renderedText.
         this.renderedScrollPane = new JScrollPane(this.renderedPane);
         this.renderedPane.setText(this.renderText);
         contentPane.add(renderedScrollPane, BorderLayout.CENTER);
 
+        // close upon pressing escape
         this.renderedPane.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
@@ -41,8 +44,6 @@ public class RenderedJavadocDialog {
                 }
             }
         });
-
-        this.renderedPane.setText(this.renderText);
 
         // show the frame
         this.ui.setSize(ScaleUtil.getDimension(600, 400));

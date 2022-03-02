@@ -13,6 +13,10 @@ public class JavadocAnnotationUtil {
     public static final Pattern OTHER_PATTERN = Pattern.compile("[\\s\\S]*");
     public static final JavadocTags[] NON_INLINES = {JavadocTags.PARAM, JavadocTags.RETURN, JavadocTags.THROWS, JavadocTags.SEE};
 
+    /**
+     * Generates a valid html link from a valid linked annotation. This tries to handle as many inputs as possible.
+     *
+     */
     public static String generateLink(String text) {
         if (text.contains("#")) {
             if (text.startsWith("#")) {
@@ -27,8 +31,8 @@ public class JavadocAnnotationUtil {
         }
     }
 
-    public static String htmlSuperscript(String text) {
-        return "<sup>" + text + "</sup>";
+    public static String htmlSuperscript(String bruh) {
+        return "<sup>" + bruh + "</sup>";
     }
 
     public static String htmlSubscript(String text) {
@@ -52,6 +56,10 @@ public class JavadocAnnotationUtil {
         return javadocList(entries, JavadocTags.PARAM);
     }
 
+    /**
+     * Runs over all entries and puts the after each other formatted like the see tag would format.
+     * @return the line in the javadoc containing all the @see entries
+     */
     public static String seeToHtml(LinkedList<String> entries) {
         StringBuilder stringBuilder = new StringBuilder(JavadocTags.SEE.getTranslation());
         int index = 0;
@@ -101,10 +109,10 @@ public class JavadocAnnotationUtil {
     }
 
     public static String convertRawJavadoc(String javadoc) {
-        javadoc = setGreen(javadoc);
         HashMap<JavadocTags, LinkedList<String>> matches = new HashMap<>();
         getMatches(javadoc, matches);
         javadoc = processMatches(javadoc, matches);
+        javadoc = setGreen(javadoc);
         return javadoc;
     }
 
@@ -146,7 +154,9 @@ public class JavadocAnnotationUtil {
 
     public static void addLineMatches(String javadoc, HashMap<JavadocTags, LinkedList<String>> matches) {
         String[] lines = javadoc.split("\n");
+        System.out.println("lines: ");
         for (String line : lines) {
+            System.out.println(line);
             for (JavadocTags tag : NON_INLINES) {
                 if (line.startsWith(tag.getText())) {
                     if (!matches.containsKey(tag)) {
