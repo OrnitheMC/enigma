@@ -25,6 +25,8 @@ import java.net.URL;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.gui.config.KeyBindsConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -117,6 +119,8 @@ public class Main {
 			setDefaultSystemProperty("swing.aatext", "true");
 
 			Themes.setupTheme();
+
+			KeyBinds.loadConfig();
 
 			Gui gui = new Gui(parsedProfile, editables);
 
