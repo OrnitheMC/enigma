@@ -87,9 +87,13 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return this.parent.equals(other.parent) && name.equals(other.name) && desc.equals(other.desc);
 	}
 
+	public boolean canConflictWith(Entry<?> entry) {
+		return false;
+	}
+
 	@Override
-	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
-		return entry instanceof FieldEntry fieldEntry && parent.equals(fieldEntry.parent);
+	public boolean canShadow(Entry<?> entry) {
+		return entry instanceof FieldEntry;
 	}
 
 	@Override

@@ -93,14 +93,17 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
-		if (entry instanceof MethodEntry methodEntry && descriptor.canConflictWith(methodEntry.descriptor)) {
-			if (parent.equals(methodEntry.parent)) {
-				return true;
-			}
-			return isStatic.test(this) != isStatic.test(methodEntry);
+	public boolean canConflictWith(Entry<?> entry) {
+		if (entry instanceof MethodEntry) {
+			MethodEntry methodEntry = (MethodEntry) entry;
+			return methodEntry.parent.equals(parent) && methodEntry.descriptor.canConflictWith(descriptor);
 		}
 		return false;
+	}
+
+	@Override
+	public boolean canShadow(Entry<?> entry) {
+		return entry instanceof MethodEntry;
 	}
 
 	@Override

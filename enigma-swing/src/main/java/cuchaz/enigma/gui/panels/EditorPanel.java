@@ -2,8 +2,10 @@ package cuchaz.enigma.gui.panels;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
@@ -17,6 +19,7 @@ import cuchaz.enigma.gui.*;
 import cuchaz.enigma.gui.warning.WarningChecker;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.EnigmaProject;
@@ -24,6 +27,10 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.classhandle.ClassHandleError;
 import cuchaz.enigma.events.ClassHandleListener;
+import cuchaz.enigma.gui.BrowserCaret;
+import cuchaz.enigma.gui.EditableType;
+import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
@@ -40,6 +47,8 @@ import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Result;
 
@@ -87,6 +96,7 @@ public class EditorPanel {
 	public EditorPanel(Gui gui) {
 		this.gui = gui;
 		this.controller = gui.getController();
+
 		this.editor.setEditable(false);
 		this.editor.setSelectionColor(new Color(31, 46, 90));
 		this.editor.setCaret(new BrowserCaret());
@@ -137,34 +147,20 @@ public class EditorPanel {
 		this.editor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent event) {
-				if (event.isControlDown()) {
-					EditorPanel.this.shouldNavigateOnClick = false;
-					if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
-					switch (event.getKeyCode()) {
-						case KeyEvent.VK_F5:
-							if (EditorPanel.this.classHandle != null) {
-								EditorPanel.this.classHandle.invalidate();
-							}
-							break;
+				if (EditorPanel.this.popupMenu.handleKeyEvent(event)) return;
 
-						case KeyEvent.VK_F:
-							// prevent navigating on click when quick find activated
-							break;
-
-						case KeyEvent.VK_ADD:
-						case KeyEvent.VK_EQUALS:
-						case KeyEvent.VK_PLUS:
-							offsetEditorZoom(2);
-							break;
-						case KeyEvent.VK_SUBTRACT:
-						case KeyEvent.VK_MINUS:
-							offsetEditorZoom(-2);
-							break;
-
-						default:
-							EditorPanel.this.shouldNavigateOnClick = true; // CTRL
-							break;
+				if (KeyBinds.EDITOR_RELOAD_CLASS.matches(event)) {
+					if (EditorPanel.this.classHandle != null) {
+						EditorPanel.this.classHandle.invalidate();
 					}
+				} else if (KeyBinds.EDITOR_QUICK_FIND.matches(event)) {
+					// prevent navigating on click when quick find activated
+				} else if (KeyBinds.EDITOR_ZOOM_IN.matches(event)) {
+					offsetEditorZoom(2);
+				} else if (KeyBinds.EDITOR_ZOOM_OUT.matches(event)) {
+					offsetEditorZoom(-2);
+				} else if (event.isControlDown()) {
+					EditorPanel.this.shouldNavigateOnClick = true; // CTRL
 				}
 			}
 
@@ -619,6 +615,10 @@ public class EditorPanel {
 
 	public void retranslateUi() {
 		this.popupMenu.retranslateUi();
+	}
+
+	public void reloadKeyBinds() {
+		this.popupMenu.setKeyBinds();
 	}
 
 	private enum DisplayMode {
