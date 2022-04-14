@@ -1,6 +1,7 @@
 package cuchaz.enigma.analysis;
 
 import cuchaz.enigma.Enigma;
+import cuchaz.enigma.analysis.index.BridgeMethodIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.EnigmaPluginContext;
 import cuchaz.enigma.api.service.JarIndexerService;
@@ -11,6 +12,8 @@ import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.Pair;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -43,6 +46,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	@Override
 	public void init(EnigmaPluginContext ctx) {
 		registerEnumNamingService(ctx);
+		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
 	}
 
@@ -54,9 +58,26 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		ctx.registerService("enigma:enum_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> Optional.ofNullable(names.get(obfEntry)));
 	}
 
+	private void registerSpecializedMethodNamingService(EnigmaPluginContext ctx) {
+		ctx.registerService("enigma:specialized_method_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> {
+			BridgeMethodIndex bridgeMethodIndex = remapper.getJarIndex().getBridgeMethodIndex();
+			if (obfEntry instanceof MethodEntry obfMethod) {
+				if (bridgeMethodIndex.isSpecializedMethod(obfMethod)) {
+					return Optional.ofNullable(bridgeMethodIndex.getBridgeFromSpecialized(obfMethod)).map(ParentedEntry::getName);
+				} else if (bridgeMethodIndex.isBridgeMethod(obfMethod)) {
+					// IndexEntryResolver#resolveEntry can return the bridge method, so we can just use the name
+					return Optional.of(obfEntry.getName());
+				}
+			}
+
+			return Optional.empty();
+		});
+	}
+
 	private void registerDecompilerServices(EnigmaPluginContext ctx) {
 		ctx.registerService("enigma:procyon", DecompilerService.TYPE, ctx1 -> Decompilers.PROCYON);
 		ctx.registerService("enigma:cfr", DecompilerService.TYPE, ctx1 -> Decompilers.CFR);
+		ctx.registerService("enigma:bytecode", DecompilerService.TYPE, ctx1 -> Decompilers.BYTECODE);
 	}
 
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {

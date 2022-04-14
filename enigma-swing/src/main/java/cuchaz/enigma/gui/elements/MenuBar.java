@@ -1,7 +1,5 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +18,9 @@ import cuchaz.enigma.gui.config.Decompiler;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.dialog.*;
+import cuchaz.enigma.gui.dialog.keybind.ConfigureKeyBindsDialog;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -43,6 +43,7 @@ public class MenuBar {
 	private final JMenuItem exportSourceItem = new JMenuItem();
 	private final JMenuItem exportJarItem = new JMenuItem();
 	private final JMenuItem statsItem = new JMenuItem();
+	private final JMenuItem configureKeyBindsItem = new JMenuItem();
 	private final JMenuItem exitItem = new JMenuItem();
 
 	private final JMenu decompilerMenu = new JMenu();
@@ -70,7 +71,6 @@ public class MenuBar {
 	private final JMenu helpMenu = new JMenu();
 	private final JMenuItem aboutItem = new JMenuItem();
 	private final JMenuItem githubItem = new JMenuItem();
-	private final JMenuItem keyBindsItem = new JMenuItem();
 
 	private final Gui gui;
 
@@ -105,6 +105,8 @@ public class MenuBar {
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.statsItem);
 		this.fileMenu.addSeparator();
+		this.fileMenu.add(this.configureKeyBindsItem);
+		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.exitItem);
 		ui.add(this.fileMenu);
 
@@ -132,17 +134,9 @@ public class MenuBar {
 
 		this.helpMenu.add(this.aboutItem);
 		this.helpMenu.add(this.githubItem);
-		this.helpMenu.add(this.keyBindsItem);
 		ui.add(this.helpMenu);
 
-		this.saveMappingsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
-
-		this.searchItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.SHIFT_DOWN_MASK));
-		this.searchClassItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
-		this.searchMethodItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
-		this.searchFieldItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
-
-		this.keyBindsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK));
+		setKeyBinds();
 
 		this.jarOpenItem.addActionListener(_e -> this.onOpenJarClicked());
 		this.jarCloseItem.addActionListener(_e -> this.gui.getController().closeJar());
@@ -154,6 +148,7 @@ public class MenuBar {
 		this.exportSourceItem.addActionListener(_e -> this.onExportSourceClicked());
 		this.exportJarItem.addActionListener(_e -> this.onExportJarClicked());
 		this.statsItem.addActionListener(_e -> StatsDialog.show(this.gui));
+		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui));
 		this.exitItem.addActionListener(_e -> this.gui.close());
 		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
 		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
@@ -169,7 +164,17 @@ public class MenuBar {
 		this.startServerItem.addActionListener(_e -> this.onStartServerClicked());
 		this.aboutItem.addActionListener(_e -> AboutDialog.show(this.gui.getFrame()));
 		this.githubItem.addActionListener(_e -> this.onGithubClicked());
-		this.keyBindsItem.addActionListener(_e -> KeyBindDialog.show(this.gui.getFrame()));
+	}
+
+	public void setKeyBinds() {
+		this.saveMappingsItem.setAccelerator(KeyBinds.SAVE_MAPPINGS.toKeyStroke());
+		this.dropMappingsItem.setAccelerator(KeyBinds.DROP_MAPPINGS.toKeyStroke());
+		this.reloadMappingsItem.setAccelerator(KeyBinds.RELOAD_MAPPINGS.toKeyStroke());
+		this.reloadAllItem.setAccelerator(KeyBinds.RELOAD_ALL.toKeyStroke());
+		this.statsItem.setAccelerator(KeyBinds.MAPPING_STATS.toKeyStroke());
+		this.searchClassItem.setAccelerator(KeyBinds.SEARCH_CLASS.toKeyStroke());
+		this.searchMethodItem.setAccelerator(KeyBinds.SEARCH_METHOD.toKeyStroke());
+		this.searchFieldItem.setAccelerator(KeyBinds.SEARCH_FIELD.toKeyStroke());
 	}
 
 	public void updateUiState() {
@@ -209,6 +214,7 @@ public class MenuBar {
 		this.exportSourceItem.setText(I18n.translate("menu.file.export.source"));
 		this.exportJarItem.setText(I18n.translate("menu.file.export.jar"));
 		this.statsItem.setText(I18n.translate("menu.file.stats"));
+		this.configureKeyBindsItem.setText(I18n.translate("menu.file.configure_keybinds"));
 		this.exitItem.setText(I18n.translate("menu.file.exit"));
 
 		this.decompilerMenu.setText(I18n.translate("menu.decompiler"));
@@ -236,7 +242,6 @@ public class MenuBar {
 		this.helpMenu.setText(I18n.translate("menu.help"));
 		this.aboutItem.setText(I18n.translate("menu.help.about"));
 		this.githubItem.setText(I18n.translate("menu.help.github"));
-		this.keyBindsItem.setText(I18n.translate("menu.help.keybinds"));
 	}
 
 	private void onOpenJarClicked() {
