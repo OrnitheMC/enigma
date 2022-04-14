@@ -248,7 +248,7 @@
 	"warning.atomic_field": "atomic fields should always be camelCase",
 	"warning.method": "Methods should be camelCase",
 	"warning.argument": "Arguments should be camelCase",
-	"warning.unknown": "Unknown warning"
+	"warning.unknown": "Unknown warning",
 
 	"keybind.category.editor": "Editor",
 	"keybind.category.menu": "Menu",
