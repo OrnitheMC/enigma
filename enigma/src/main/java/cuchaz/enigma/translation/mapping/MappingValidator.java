@@ -29,17 +29,18 @@ public class MappingValidator {
 	}
 
 	public boolean validateRename(ValidationContext vc, Entry<?> entry, String name) {
-		Collection<Entry<?>> equivalentEntries = index.getEntryResolver().resolveEquivalentEntries(entry);
 		boolean error = false;
 
 		for (Entry<?> equivalentEntry : index.getEntryResolver().resolveEquivalentEntries(entry)) {
 			equivalentEntry.validateName(vc, name);
 			error |= validateUnique(vc, equivalentEntry, name);
 		}
+
 		return error;
 	}
 
 	private boolean validateUnique(ValidationContext vc, Entry<?> entry, String name) {
+		Entry<?> translatedEntry = deobfuscator.translate(entry);
 		ClassEntry containingClass = entry.getContainingClass();
 		Collection<ClassEntry> relatedClasses = getRelatedClasses(containingClass);
 
@@ -47,26 +48,20 @@ public class MappingValidator {
 		Entry<?> shadowedEntry;
 
 		for (ClassEntry relatedClass : relatedClasses) {
-			if (isStatic(entry) && relatedClass != containingClass) {
-				// static entries can only conflict with entries in the same class
-				continue;
-			}
-
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
-			Entry<?> translatedEntry = deobfuscator.translate(relatedEntry);
-
 			List<? extends Entry<?>> translatedSiblings = obfToDeobf.getSiblings(relatedEntry).stream()
-					.filter(e -> !isStatic(e)) // TODO: Improve this
 					.map(deobfuscator::translate)
 					.toList();
 
 			if (!isUnique(translatedEntry, translatedSiblings, name)) {
 				Entry<?> parent = translatedEntry.getParent();
+
 				if (parent != null) {
 					vc.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
 				} else {
 					vc.raise(Message.NONUNIQUE_NAME, name);
 				}
+
 				error = true;
 			} else if ((shadowedEntry = getShadowedEntry(translatedEntry, translatedSiblings, name)) != null) {
 				Entry<?> parent = shadowedEntry.getParent();
@@ -102,7 +97,7 @@ public class MappingValidator {
 	}
 
 	private boolean canConflict(Entry<?> entry, Entry<?> sibling) {
-		return entry.canConflictWith(sibling);
+		return entry.canConflictWith(sibling, this::isStatic);
 	}
 
 	@Nullable

@@ -85,7 +85,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry) {
+	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
 		return entry instanceof LocalVariableEntry variableEntry && parent.equals(variableEntry.parent);
 	}
 

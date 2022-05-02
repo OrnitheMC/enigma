@@ -113,7 +113,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * entry's containing class, or equal to a super class or super
 	 * interface or child class of this entry's containing class.
 	 */
-	boolean canConflictWith(Entry<?> entry);
+	boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic);
 
 	boolean canShadow(Entry<?> entry);
 
