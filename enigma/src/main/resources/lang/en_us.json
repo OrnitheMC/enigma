@@ -79,6 +79,9 @@
 	"menu.help.about.description": "A tool for deobfuscation of Java code",
 	"menu.help.about.version": "Version: %s",
 	"menu.help.github": "Github Page",
+	"menu.advanced": "Advanced",
+ 	"menu.advanced.map_locals.enable": "Enable Mapping Locals",
+ 	"menu.advanced.map_locals.disable": "Disable Mapping Locals",
 
 	"popup_menu.rename": "Rename",
 	"popup_menu.paste": "Paste text",
