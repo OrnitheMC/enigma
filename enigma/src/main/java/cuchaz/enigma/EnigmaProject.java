@@ -141,19 +141,7 @@ public class EnigmaProject {
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry method) {
 			// HACKHACK: hardcoded obfuscation format
-			String name = method.getName();
-
-			if (name.startsWith("method_")) {
-				String num = name.substring(7);
-
-				try {
-					return Integer.parseInt(num) > 0;
-				} catch (NumberFormatException ignored) {
-
-				}
-			}
-
-			return false;
+			return method.getName().startsWith("m_");
 		}
 		if (obfEntry instanceof LocalVariableEntry variable) {
 			return enigma.mapLocals() || variable.isArgument();
