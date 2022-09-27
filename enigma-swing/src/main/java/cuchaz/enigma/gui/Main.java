@@ -152,6 +152,8 @@ public class Main {
 									controller.openMappings(MappingFormat.ENIGMA_DIRECTORY, mappingsPath);
 								} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsPath))) {
 									controller.openMappings(MappingFormat.ENIGMA_ZIP, mappingsPath);
+								} else if ("tiny".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsPath))) {
+									controller.openMappings(MappingFormat.TINY_V2, mappingsPath);
 								} else {
 									controller.openMappings(MappingFormat.ENIGMA_FILE, mappingsPath);
 								}
