@@ -128,7 +128,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print("f\t");
 		writer.print(((FieldEntry) node.getEntry()).getDesc().toString());
 		writer.print("\t");
-		writer.print(node.getEntry().getName());
+		writer.print(/*node.getEntry().getName()*/"");
 		writer.print("\t");
 		EntryMapping mapping = node.getValue();
 
