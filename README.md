@@ -19,7 +19,7 @@ Enigma includes the following open-source libraries:
 
 ## Usage
 
-Pre-compiled jars can be found on the [Ornithe maven](https://copetan.jfrog.io/artifactory/minecraft-maven/).
+Pre-compiled jars can be found on the [Ornithe maven](https://maven.ornithemc.net/).
 
 ### Launching the GUI
 
