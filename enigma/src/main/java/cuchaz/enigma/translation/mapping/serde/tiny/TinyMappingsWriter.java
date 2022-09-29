@@ -32,7 +32,7 @@ public class TinyMappingsWriter implements MappingsWriter {
     private static final Joiner TAB_JOINER = Joiner.on('\t');
 
     //Possibly add a gui or a way to select the namespaces when exporting from the gui
-    public static final TinyMappingsWriter INSTANCE = new TinyMappingsWriter("intermediary", "named");
+    public static final TinyMappingsWriter INSTANCE = new TinyMappingsWriter("calamus", "named");
 
     // HACK: as of enigma 0.13.1, some fields seem to appear duplicated?
     private final Set<String> writtenLines = new HashSet<>();
