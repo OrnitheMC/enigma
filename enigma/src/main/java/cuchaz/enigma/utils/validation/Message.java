@@ -12,6 +12,7 @@ public class Message {
 	public static final Message NONUNIQUE_NAME_CLASS = create(Type.ERROR, "nonunique_name_class");
 	public static final Message NONUNIQUE_NAME = create(Type.ERROR, "nonunique_name");
 	public static final Message ILLEGAL_CLASS_NAME = create(Type.ERROR, "illegal_class_name");
+	public static final Message MISSING_LOCAL_PREFIX = create(Type.ERROR, "missing_local_prefix");
 	public static final Message ILLEGAL_IDENTIFIER = create(Type.ERROR, "illegal_identifier");
 	public static final Message RESERVED_IDENTIFIER = create(Type.ERROR, "reserved_identifier");
 	public static final Message ILLEGAL_DOC_COMMENT_END = create(Type.ERROR, "illegal_doc_comment_end");
