@@ -27,7 +27,7 @@ subprojects {
     }
 
     group = 'net.ornithemc'
-    version = '1.2.5'
+    version = '1.2.6'
 
     version = version + (System.getenv("GITHUB_ACTIONS") ? "" : "+local")
 
