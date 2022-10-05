@@ -230,6 +230,7 @@
 	"validation.message.nonunique_name_class": "Name '%s' is not unique in '%s'.",
 	"validation.message.nonunique_name": "Name '%s' is not unique.",
 	"validation.message.illegal_class_name": "'%s' is not a valid class name.",
+	"validation.message.missing_local_prefix": "'%s' is missing local class prefix '%s'.",
 	"validation.message.illegal_identifier": "'%s' is not a valid identifier.",
 	"validation.message.illegal_identifier.long": "Invalid character '%2$s' at position %3$d.",
 	"validation.message.illegal_doc_comment_end": "Javadoc comment cannot contain the character sequence '*/'.",

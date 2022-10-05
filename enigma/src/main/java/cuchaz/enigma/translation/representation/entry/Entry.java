@@ -85,6 +85,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 */
 	String getContextualName();
 
+	default String getNamePrefix() {
+		return "";
+	}
+
 	String getJavadocs();
 
 	default String getSourceRemapName() {

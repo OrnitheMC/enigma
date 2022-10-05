@@ -91,7 +91,7 @@ public class IdentifierPanel {
 
 			if (deobfEntry instanceof ClassEntry) {
 				ClassEntry ce = (ClassEntry) deobfEntry;
-				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
+				String name = ce.isInnerClass() ? ce.getName().substring(ce.getNamePrefix().length()) : ce.getFullName();
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
@@ -177,11 +177,11 @@ public class IdentifierPanel {
 	}
 
 	private void validateRename(String newName) {
-		gui.getController().validateChange(vc, EntryChange.modify(entry).withDeobfName(newName));
+		gui.getController().validateChange(vc, EntryChange.modify(entry).withDeobfName(entry.getNamePrefix() + newName));
 	}
 
 	private void doRename(String newName) {
-		EntryChange<? extends Entry<?>> change = EntryChange.modify(entry).withDeobfName(newName);
+		EntryChange<? extends Entry<?>> change = EntryChange.modify(entry).withDeobfName(entry.getNamePrefix() + newName);
 		gui.getController().applyChange(vc, change);
 	}
 

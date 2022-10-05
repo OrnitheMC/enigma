@@ -24,10 +24,12 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
 	private final String fullName;
+	private final String localPrefix;
 
 	public ClassEntry(String className) {
 		this(getOuterClass(className), getInnerName(className), null);
@@ -39,10 +41,22 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	public ClassEntry(@Nullable ClassEntry parent, String className, @Nullable String javadocs) {
 		super(parent, className, javadocs);
+
 		if (parent != null) {
+			// local classes have a number prefix
+			int i = 0;
+			while (i < name.length() && Character.isDigit(name.charAt(i))) {
+				i++;
+			}
+			// if entire inner name is a number, this class is anonymous, not local
+			if (i == name.length()) {
+				i = 0;
+			}
 			fullName = parent.getFullName() + "$" + name;
+			localPrefix = name.substring(0, i);
 		} else {
 			fullName = name;
+			localPrefix = "";
 		}
 
 		if (parent == null && className.indexOf('.') >= 0) {
@@ -66,7 +80,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (packagePos > 0) {
 			return name.substring(packagePos + 1);
 		}
-		return name;
+		return name.substring(localPrefix.length());
 	}
 
 	@Override
@@ -80,6 +94,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 			return this.parent.getSimpleName() + "$" + this.name;
 		}
 		return this.getSimpleName();
+	}
+
+	@Override
+	public String getNamePrefix() {
+		return localPrefix;
 	}
 
 	@Override
@@ -128,7 +147,10 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public void validateName(ValidationContext vc, String name) {
-		IdentifierValidation.validateClassName(vc, name, this.isInnerClass());
+		if (!name.startsWith(localPrefix)) {
+			vc.raise(Message.MISSING_LOCAL_PREFIX, name, localPrefix);
+		}
+		IdentifierValidation.validateClassName(vc, name.substring(localPrefix.length()), this.isInnerClass());
 	}
 
 	@Override
@@ -229,7 +251,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public String getSourceRemapName() {
 		ClassEntry outerClass = getOuterClass();
-		if (outerClass != null) {
+		if (outerClass != null && localPrefix.isBlank()) {
 			return outerClass.getSourceRemapName() + "." + name;
 		}
 		return getSimpleName();
