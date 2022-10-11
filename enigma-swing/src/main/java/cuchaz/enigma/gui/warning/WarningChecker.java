@@ -87,7 +87,7 @@ public class WarningChecker {
     }
 
     public boolean followsMethodStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-         if (!isCamelCase(name)){
+         if (!name.startsWith("<") && !isCamelCase(name)){
             this.warningType = WarningType.METHOD;
             return false;
         }
