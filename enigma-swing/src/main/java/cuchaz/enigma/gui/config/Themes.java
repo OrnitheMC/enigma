@@ -91,7 +91,8 @@ public class Themes {
 				RenamableTokenType.OBFUSCATED, BoxHighlightPainter.create(UiConfig.getObfuscatedColor(), UiConfig.getObfuscatedOutlineColor()),
 				RenamableTokenType.PROPOSED, BoxHighlightPainter.create(UiConfig.getProposedColor(), UiConfig.getProposedOutlineColor()),
 				RenamableTokenType.DEOBFUSCATED, BoxHighlightPainter.create(UiConfig.getDeobfuscatedColor(), UiConfig.getDeobfuscatedOutlineColor()),
-				RenamableTokenType.NAME_WARNING, BoxHighlightPainter.create(UiConfig.getNameWarningColor(), UiConfig.getNameWarningOutlineColor())
+				RenamableTokenType.NAME_WARNING, BoxHighlightPainter.create(UiConfig.getNameWarningColor(), UiConfig.getNameWarningOutlineColor()),
+				RenamableTokenType.DEBUG, BoxHighlightPainter.create(UiConfig.getDebugTokenColor(), UiConfig.getDebugTokenOutlineColor())
 		);
 	}
 

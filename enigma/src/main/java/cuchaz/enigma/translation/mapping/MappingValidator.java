@@ -50,6 +50,7 @@ public class MappingValidator {
 		for (ClassEntry relatedClass : relatedClasses) {
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
 			List<? extends Entry<?>> translatedSiblings = obfToDeobf.getSiblings(relatedEntry).stream()
+					.filter(e -> !e.equals(entry)) // If the entry is a class, this could contain itself
 					.map(deobfuscator::translate)
 					.toList();
 

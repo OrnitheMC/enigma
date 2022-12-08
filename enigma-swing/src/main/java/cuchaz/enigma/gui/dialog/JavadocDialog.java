@@ -30,6 +30,7 @@ import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.validation.ValidationContext;
@@ -191,14 +192,15 @@ public class JavadocDialog {
 	}
 
 	private EntryChange<?> getEntryChange() {
-		return text.getText().trim().isEmpty() ? EntryChange.modify(entry).clearJavadoc() : EntryChange.modify(entry).withJavadoc(text.getText());
+		return text.getText().isBlank() ? EntryChange.modify(entry).clearJavadoc() : EntryChange.modify(entry).withJavadoc(text.getText());
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
-		EntryReference<Entry<?>, Entry<?>> translatedReference = controller.project.getMapper().deobfuscate(entry);
-		String text = Strings.nullToEmpty(translatedReference.entry.getJavadocs());
+		EntryMapping mapping = controller.project.getMapper().getDeobfMapping(entry.entry);
+		String text = Strings.nullToEmpty(mapping.javadoc());
 
-		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.getNameableEntry(), text);
+		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
+		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
 	}

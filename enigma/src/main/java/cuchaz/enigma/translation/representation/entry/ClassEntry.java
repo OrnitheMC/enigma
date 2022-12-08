@@ -169,7 +169,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public String getPackageName() {
-		return getPackageName(fullName);
+		return getParentPackage(fullName);
 	}
 
 	/**
@@ -215,12 +215,26 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return packageName != null && (packageName.startsWith("java/") || packageName.startsWith("javax/"));
 	}
 
-	public static String getPackageName(String name) {
+	public static String getParentPackage(String name) {
 		int pos = name.lastIndexOf('/');
 		if (pos > 0) {
 			return name.substring(0, pos);
 		}
 		return null;
+	}
+
+	public static String getNameInPackage(String name) {
+		int pos = name.lastIndexOf('/');
+
+		if (pos == name.length() - 1) {
+			return "(empty)";
+		}
+
+		if (pos > 0) {
+			return name.substring(pos + 1);
+		}
+
+		return name;
 	}
 
 	@Nullable

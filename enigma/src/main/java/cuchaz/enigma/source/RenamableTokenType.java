@@ -4,5 +4,6 @@ public enum RenamableTokenType {
 	OBFUSCATED,
 	DEOBFUSCATED,
 	PROPOSED,
-    NAME_WARNING
+    NAME_WARNING,
+	DEBUG
 }
