@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
@@ -35,6 +34,7 @@ public class IdentifierPanel {
 
 	private final JPanel ui = new JPanel();
 
+	private Entry<?> lastEntry;
 	private Entry<?> entry;
 	private Entry<?> deobfEntry;
 
@@ -80,6 +80,36 @@ public class IdentifierPanel {
 	public void refreshReference() {
 		this.deobfEntry = entry == null ? null : gui.getController().project.getMapper().deobfuscate(this.entry);
 
+		// Prevent IdentifierPanel from being rebuilt if you didn't click off.
+		if (this.lastEntry == this.entry && this.nameField != null) {
+			if (!this.nameField.hasChanges()) {
+
+				final String name;
+
+				// Find what to set the name to.
+				if (this.deobfEntry instanceof MethodEntry methodEntry && methodEntry.isConstructor()) {
+					// Get the parent of the method if it is a constructor.
+					final ClassEntry parent = methodEntry.getParent();
+
+					if (parent == null) {
+						throw new IllegalStateException("constructor method entry to render has no parent!");
+					}
+
+					name = parent.isInnerClass() ? parent.getName() : parent.getFullName();
+				} else if (this.deobfEntry instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+					name = classEntry.getFullName();
+				} else {
+					name = deobfEntry.getName();
+				}
+
+				this.nameField.setReferenceText(name);
+			}
+
+			return;
+		}
+
+		this.lastEntry = entry;
+
 		this.nameField = null;
 
 		TableHelper th = new TableHelper(this.ui, this.entry, this.gui);
@@ -95,15 +125,13 @@ public class IdentifierPanel {
 				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.CLASS, this::onModifierChanged);
-			} else if (deobfEntry instanceof FieldEntry) {
-				FieldEntry fe = (FieldEntry) deobfEntry;
+			} else if (deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type_descriptor"), fe.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.FIELD, this::onModifierChanged);
-			} else if (deobfEntry instanceof MethodEntry) {
-				MethodEntry me = (MethodEntry) deobfEntry;
+			} else if (deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
@@ -117,17 +145,16 @@ public class IdentifierPanel {
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), entry.getName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 				th.addModifierRow(I18n.translate("info_panel.identifier.modifier"), EditableType.METHOD, this::onModifierChanged);
-			} else if (deobfEntry instanceof LocalVariableEntry) {
-				LocalVariableEntry lve = (LocalVariableEntry) deobfEntry;
-				EditableType searchType;
+			} else if (deobfEntry instanceof LocalVariableEntry lve) {
+				EditableType type;
 
 				if (lve.isArgument()) {
-					searchType = EditableType.PARAMETER;
+					type = EditableType.PARAMETER;
 				} else {
-					searchType = EditableType.LOCAL_VARIABLE;
+					type = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(searchType, lve.getName());
+				this.nameField = th.addRenameTextField(type, lve.getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
 				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
 				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
@@ -231,15 +258,12 @@ public class IdentifierPanel {
 		}
 
 		public void addCopiableRow(JLabel c1, JLabel c2) {
-			c2.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getButton() == MouseEvent.BUTTON1) {
-						GuiUtil.copyToClipboard(c2.getText());
-						GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
-					}
+			c2.addMouseListener(GuiUtil.onMouseClick(e -> {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					GuiUtil.copyToClipboard(c2.getText());
+					GuiUtil.showPopup(c2, I18n.translate("popup.copied"), e.getXOnScreen(), e.getYOnScreen());
 				}
-			});
+			}));
 			addRow(c1, c2);
 		}
 

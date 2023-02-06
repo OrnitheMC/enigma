@@ -39,12 +39,7 @@ public class ConvertingTextField implements Validatable {
 		this.label = GuiUtil.unboldLabel(new JLabel(text));
 		this.label.setBorder(BorderFactory.createLoweredBevelBorder());
 
-		this.label.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				startEditing();
-			}
-		});
+		this.label.addMouseListener(GuiUtil.onMouseClick(e -> startEditing()));
 
 		this.textField.addFocusListener(new FocusAdapter() {
 			@Override
@@ -55,16 +50,13 @@ public class ConvertingTextField implements Validatable {
 			}
 		});
 
-		this.textField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (KeyBinds.EXIT.matches(e)) {
-					stopEditing(true);
-				} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
-					stopEditing(false);
-				}
+		this.textField.addKeyListener(GuiUtil.onKeyPress(e -> {
+			if (KeyBinds.EXIT.matches(e)) {
+				stopEditing(true);
+			} else if (KeyBinds.DIALOG_SAVE.matches(e)) {
+				stopEditing(false);
 			}
-		});
+		}));
 
 		this.ui.add(this.label);
 	}
@@ -105,6 +97,21 @@ public class ConvertingTextField implements Validatable {
 		stopEditing(true);
 		this.label.setText(text);
 		this.textField.setText(text);
+	}
+
+	/**
+	 * Sets the visible text without aborting.
+	 * <p>
+	 * The text in the {@link #textField} is not replaced if it has been edited,
+	 * allowing the user to continue editing their entry without interference.
+	 *
+	 * @param text The text to set the label and text field to.
+	 */
+	public void setReferenceText(String text) {
+		if (!this.hasChanges()) {
+			this.textField.setText(text);
+		}
+		this.label.setText(text);
 	}
 
 	public void setEditText(String text) {

@@ -1,31 +1,27 @@
-package cuchaz.enigma.gui.elements;
+package cuchaz.enigma.gui.docker;
 
-import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
-
-import javax.annotation.Nullable;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.tree.*;
-
-import cuchaz.enigma.analysis.ClassInheritanceTreeNode;
-import cuchaz.enigma.analysis.MethodInheritanceTreeNode;
+import cuchaz.enigma.analysis.AbstractClassTreeNode;
+import cuchaz.enigma.analysis.AbstractMethodTreeNode;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.SingleTreeSelectionModel;
-import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
-public abstract class AbstractInheritanceTree {
-	private final JPanel panel = new JPanel(new BorderLayout());
+import javax.annotation.Nullable;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseEvent;
 
+public abstract class AbstractInheritanceTreeDocker extends Docker {
 	private final JTree tree = new JTree();
 
-	protected final Gui gui;
-
-	public AbstractInheritanceTree(Gui gui, TreeCellRenderer cellRenderer) {
-		this.gui = gui;
+	protected AbstractInheritanceTreeDocker(Gui gui, TreeCellRenderer cellRenderer) {
+		super(gui);
 
 		this.tree.setModel(null);
 		this.tree.setCellRenderer(cellRenderer);
@@ -33,7 +29,7 @@ public abstract class AbstractInheritanceTree {
 		this.tree.setShowsRootHandles(true);
 		this.tree.addMouseListener(GuiUtil.onMouseClick(this::onClick));
 
-		this.panel.add(new JScrollPane(this.tree));
+		this.add(new JScrollPane(this.tree));
 	}
 
 	private void onClick(MouseEvent event) {
@@ -45,12 +41,10 @@ public abstract class AbstractInheritanceTree {
 			}
 
 			Object node = path.getLastPathComponent();
-			if (node instanceof ClassInheritanceTreeNode classNode) {
-				gui.getController().navigateTo(new ClassEntry(classNode.getObfClassName()));
-			} else if (node instanceof MethodInheritanceTreeNode methodNode) {
-				if (methodNode.isImplemented()) {
-					gui.getController().navigateTo(methodNode.getMethodEntry());
-				}
+			if (node instanceof AbstractClassTreeNode classNode) {
+				gui.getController().navigateTo(classNode.getClassEntry());
+			} else if (node instanceof AbstractMethodTreeNode methodNode) {
+				gui.getController().navigateTo(methodNode.getMethodEntry());
 			}
 		}
 	}
@@ -68,19 +62,14 @@ public abstract class AbstractInheritanceTree {
 			this.tree.setSelectionRow(this.tree.getRowForPath(path));
 		}
 
-		this.panel.show();
-	}
-
-	public void retranslateUi() {
-
+		this.setVisible(true);
 	}
 
 	@Nullable
 	protected abstract DefaultMutableTreeNode getNodeFor(Entry<?> entry);
 
-	protected abstract String getPanelName();
-
-	public JPanel getPanel() {
-		return this.panel;
+	@Override
+	public Location getButtonPosition() {
+		return new Location(Side.RIGHT, VerticalLocation.TOP);
 	}
 }

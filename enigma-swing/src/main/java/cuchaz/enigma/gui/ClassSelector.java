@@ -22,9 +22,6 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
@@ -51,9 +48,7 @@ public class ClassSelector extends JTree {
 		setModel(null);
 
 		// hook events
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent event) {
+		addMouseListener(GuiUtil.onMouseClick(event -> {
 				if (selectionListener != null && event.getClickCount() == 2) {
 					// get the selected node
 					TreePath path = getSelectionPath();
@@ -61,32 +56,28 @@ public class ClassSelector extends JTree {
 						selectionListener.onSelectClass(node.getObfEntry());
 					}
 				}
-			}
-		});
-		addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				TreePath[] paths = getSelectionPaths();
+			}));
+		addKeyListener(GuiUtil.onKeyPress(e -> {
+			TreePath[] paths = getSelectionPaths();
 
-				if (paths != null) {
-					if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
-						for (TreePath path : paths) {
-							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-								gui.toggleMappingFromEntry(node.getObfEntry());
-							}
+			if (paths != null) {
+				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
+					for (TreePath path : paths) {
+						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+							gui.toggleMappingFromEntry(node.getObfEntry());
 						}
 					}
+				}
 
-					if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
-						for (TreePath path : paths) {
-							if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-								selectionListener.onSelectClass(node.getObfEntry());
-							}
+				if (selectionListener != null && KeyBinds.SELECT.matches(e)) {
+					for (TreePath path : paths) {
+						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
+							selectionListener.onSelectClass(node.getObfEntry());
 						}
 					}
 				}
 			}
-		});
+		}));
 
 		final DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			{
@@ -97,8 +88,8 @@ public class ClassSelector extends JTree {
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-				if (leaf && value instanceof ClassSelectorClassNode) {
-					setIcon(GuiUtil.getClassIcon(gui, ((ClassSelectorClassNode) value).getObfEntry()));
+				if (leaf && value instanceof ClassSelectorClassNode node) {
+					setIcon(GuiUtil.getClassIcon(gui, node.getObfEntry()));
 				}
 
 				return this;
@@ -169,19 +160,23 @@ public class ClassSelector extends JTree {
 		this.renameSelectionListener = renameSelectionListener;
 	}
 
+	public NestedPackages getPackageManager() {
+		return this.packageManager;
+	}
+
 	public void setClasses(Collection<ClassEntry> classEntries) {
-		List<StateEntry> state = getExpansionState();
+		List<StateEntry> state = this.getExpansionState();
 
 		if (classEntries == null) {
-			setModel(null);
+			this.setModel(null);
 			return;
 		}
 
 		// update the tree control
-		packageManager = new NestedPackages(classEntries, comparator, controller.project.getMapper());
-		setModel(new DefaultTreeModel(packageManager.getRoot()));
+		this.packageManager = new NestedPackages(classEntries, this.comparator, this.controller.project.getMapper());
+		this.setModel(new DefaultTreeModel(this.packageManager.getRoot()));
 
-		restoreExpansionState(state);
+		this.restoreExpansionState(state);
 	}
 
 	public ClassEntry getSelectedClass() {
@@ -220,12 +215,13 @@ public class ClassSelector extends JTree {
 	}
 
 	public void restoreExpansionState(List<StateEntry> expansionState) {
-		clearSelection();
+		this.clearSelection();
 
 		for (StateEntry entry : expansionState) {
-			switch (entry.state) {
-				case SELECTED -> addSelectionPath(entry.path);
-				case EXPANDED -> expandPath(entry.path);
+			if (entry.state() == State.EXPANDED) {
+				this.expandPath(entry.path());
+			} else if (entry.state() == State.SELECTED) {
+				this.addSelectionPath(entry.path());
 			}
 		}
 	}

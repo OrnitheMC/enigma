@@ -79,7 +79,7 @@ public class MenuBar {
 	public MenuBar(Gui gui) {
 		this.gui = gui;
 
-		JMenuBar ui = gui.getMainWindow().menuBar();
+		JMenuBar ui = gui.getMainWindow().getMenuBar();
 
 		this.retranslateUi();
 
@@ -362,7 +362,7 @@ public class MenuBar {
 		}
 	}
 
-	private void onConnectClicked() {
+	public void onConnectClicked() {
 		if (this.gui.getController().getClient() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -385,7 +385,7 @@ public class MenuBar {
 		Arrays.fill(result.getPassword(), (char) 0);
 	}
 
-	private void onStartServerClicked() {
+	public void onStartServerClicked() {
 		if (this.gui.getController().getServer() != null) {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
@@ -478,7 +478,7 @@ public class MenuBar {
 			if (lookAndFeel.equals(UiConfig.getLookAndFeel())) {
 				themeButton.setSelected(true);
 			}
-			themeButton.addActionListener(_e -> {
+			themeButton.addActionListener(e -> {
 				UiConfig.setLookAndFeel(lookAndFeel);
 				UiConfig.save();
 				ChangeDialog.show(gui.getFrame());

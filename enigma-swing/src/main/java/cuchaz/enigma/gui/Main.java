@@ -12,7 +12,6 @@
 package cuchaz.enigma.gui;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,8 +24,9 @@ import java.net.URL;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.gui.config.KeyBindsConfig;
+
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
@@ -39,7 +39,6 @@ import cuchaz.enigma.utils.I18n;
 import javax.imageio.ImageIO;
 
 public class Main {
-
 	public static void main(String[] args) throws IOException {
 		OptionParser parser = new OptionParser();
 
@@ -126,10 +125,6 @@ public class Main {
 
 			setApplicationIcon(gui);
 			GuiController controller = gui.getController();
-			
-			if (options.has("single-class-tree")) {
-				gui.setSingleClassTree(true);
-			}
 
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread
@@ -140,6 +135,11 @@ public class Main {
 						CrashDialog.show(t);
 					}
 				});
+			}
+
+			if (options.has("single-class-tree")) {
+				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
+				gui.openDocker(AllClassesDocker.class);
 			}
 
 			if (options.has(jar)) {
@@ -178,7 +178,7 @@ public class Main {
 			throw new NoSuchElementException("Missing icon: '" + path + "' at " + path);
 		} else {
 			BufferedImage icon = ImageIO.read(iconUrl);
-			gui.getMainWindow().frame().setIconImage(icon);
+			gui.getMainWindow().getFrame().setIconImage(icon);
 		}
 	}
 

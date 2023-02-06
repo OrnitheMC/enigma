@@ -9,6 +9,7 @@ This project was forked from QuiltMCs version of Enigma which was in turn forked
 Enigma is distributed under the [LGPL-3.0](LICENSE).
 
 Enigma includes the following open-source libraries:
+ - [Quiltflower](https://github.com/QuiltMC/quiltflower) (Apache-2.0)
  - A [modified version](https://github.com/FabricMC/procyon) of [Procyon](https://bitbucket.org/mstrobel/procyon) (Apache-2.0)
  - A [modified version](https://github.com/FabricMC/cfr) of [CFR](https://github.com/leibnitz27/cfr) (MIT)
  - [Guava](https://github.com/google/guava) (Apache-2.0)

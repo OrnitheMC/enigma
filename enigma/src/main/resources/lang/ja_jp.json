@@ -93,9 +93,6 @@
 	"editor.decompile_error": "デコンパイル中にエラーが発生しました",
 	"editor.remap_error": "リマッピング中にエラーが発生しました",
 
-	"info_panel.classes": "クラス一覧",
-	"info_panel.classes.obfuscated": "難読化されたクラス",
-	"info_panel.classes.deobfuscated": "難読化解除されたクラス",
 	"info_panel.identifier": "識別子情報",
 	"info_panel.identifier.none": "識別子が選択されていません",
 	"info_panel.identifier.variable": "変数",
@@ -105,14 +102,10 @@
 	"info_panel.identifier.class": "クラス",
 	"info_panel.identifier.type_descriptor": "型記述子",
 	"info_panel.identifier.method_descriptor": "メソッド記述子",
-	"info_panel.identifier.modifier":  "修飾子",
+	"info_panel.identifier.modifier":	"修飾子",
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(デコンパイル中...)",
 	"info_panel.editor.class.not_found": "クラスを見つけられません:",
-	"info_panel.tree.structure": "構造",
-	"info_panel.tree.inheritance": "継承",
-	"info_panel.tree.implementations": "実装",
-	"info_panel.tree.calls": "呼び出し関係",
 
 	"popup.copied": "コピーしました!",
 
@@ -128,9 +121,6 @@
 	"structure.options.sorting.default": "デフォルト",
 	"structure.options.sorting.a_z": "A から Z",
 	"structure.options.sorting.z_a": "Z から A",
-
-	"log_panel.messages": "メッセージ",
-	"log_panel.users": "ユーザー",
 
 	"progress.operation": "%s - 処理中",
 	"progress.jar.indexing": "jarのインデックス中",
@@ -220,5 +210,15 @@
 	"crash.export": "エクスポート",
 	"crash.ignore": "無視",
 	"crash.exit": "終了",
-	"crash.exit.warning": "終了すると、未保存の変更は失われます"
+	"crash.exit.warning": "終了すると、未保存の変更は失われます",
+
+	"docker.structure.title": "構造",
+	"docker.inheritance.title": "継承",
+	"docker.implementations.title": "実装",
+	"docker.calls.title": "呼び出し関係",
+	"docker.collab.messages_title": "メッセージ",
+	"docker.collab.users_title": "ユーザー",
+	"docker.all_classes.title": "クラス一覧",
+	"docker.obfuscated_classes.title": "難読化されたクラス",
+	"docker.deobfuscated_classes.title": "難読化解除されたクラス"
 }

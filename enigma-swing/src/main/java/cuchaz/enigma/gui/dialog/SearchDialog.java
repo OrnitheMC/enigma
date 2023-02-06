@@ -24,9 +24,10 @@ import javax.swing.event.DocumentListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.GuiController;
-import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
 import cuchaz.enigma.gui.util.AbstractListCellRenderer;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
@@ -101,22 +102,7 @@ public class SearchDialog {
 			}
 
 		});
-		searchField.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (KeyBinds.SEARCH_DIALOG_NEXT.matches(e)) {
-					int next = classList.isSelectionEmpty() ? 0 : classList.getSelectedIndex() + 1;
-					classList.setSelectedIndex(next);
-					classList.ensureIndexIsVisible(next);
-				} else if (KeyBinds.SEARCH_DIALOG_PREVIOUS.matches(e)) {
-					int prev = classList.isSelectionEmpty() ? classList.getModel().getSize() : classList.getSelectedIndex() - 1;
-					classList.setSelectedIndex(prev);
-					classList.ensureIndexIsVisible(prev);
-				} else if (KeyBinds.EXIT.matches(e)) {
-					close();
-				}
-			}
-		});
+		searchField.addKeyListener(GuiUtil.onKeyPress(this::onKeyPressed));
 		searchField.addActionListener(e -> openSelected());
 
 		// add the search field to the panel. Set it's with as 3, so it scales properly when resizing. Set top padding for space between the buttons above it
@@ -128,16 +114,13 @@ public class SearchDialog {
 		classList.setModel(classListModel);
 		classList.setCellRenderer(new ListCellRendererImpl(parent));
 		classList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		classList.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent mouseEvent) {
-				if (mouseEvent.getClickCount() >= 2) {
-					int idx = classList.locationToIndex(mouseEvent.getPoint());
-					SearchEntryImpl entry = classList.getModel().getElementAt(idx);
-					openEntry(entry);
-				}
+		classList.addMouseListener(GuiUtil.onMouseClick(mouseEvent -> {
+			if (mouseEvent.getClickCount() >= 2) {
+				int idx = classList.locationToIndex(mouseEvent.getPoint());
+				SearchEntryImpl entry = classList.getModel().getElementAt(idx);
+				openEntry(entry);
 			}
-		});
+		}));
 
 		contentPane.add(new JScrollPane(classList,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -211,21 +194,25 @@ public class SearchDialog {
 		}
 	}
 
-	private void openEntry(SearchEntryImpl e) {
+	private void openEntry(SearchEntryImpl entryImpl) {
 		close();
-		su.hit(e);
-		parent.getController().navigateTo(e.obf);
-		if (e.obf instanceof ClassEntry) {
-			if (e.deobf != null) {
-				parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf);
+		su.hit(entryImpl);
+		parent.getController().navigateTo(entryImpl.obf);
+		if (entryImpl.obf instanceof ClassEntry entry) {
+			if (entryImpl.deobf != null) {
+				DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
+				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf);
 			} else {
-				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf);
+				ObfuscatedClassesDocker obfuscatedPanel = Docker.getDocker(ObfuscatedClassesDocker.class);
+				obfuscatedPanel.getClassSelector().setSelectionClass(entry);
 			}
 		} else {
-			if (e.deobf != null) {
-				parent.getDeobfPanel().deobfClasses.setSelectionClass((ClassEntry) e.deobf.getParent());
-			} else {
-				parent.getObfPanel().obfClasses.setSelectionClass((ClassEntry) e.obf.getParent());
+			if (entryImpl.deobf != null && entryImpl.deobf.getParent() != null) {
+				DeobfuscatedClassesDocker deobfuscatedPanel = Docker.getDocker(DeobfuscatedClassesDocker.class);
+				deobfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.deobf.getParent());
+			} else if (entryImpl.obf.getParent() != null) {
+				ObfuscatedClassesDocker obfuscatedPanel = Docker.getDocker(ObfuscatedClassesDocker.class);
+				obfuscatedPanel.getClassSelector().setSelectionClass((ClassEntry) entryImpl.obf.getParent());
 			}
 		}
 	}
@@ -271,6 +258,20 @@ public class SearchDialog {
 
 	public void dispose() {
 		dialog.dispose();
+	}
+
+	private void onKeyPressed(KeyEvent e) {
+		if (KeyBinds.SEARCH_DIALOG_NEXT.matches(e)) {
+			int next = classList.isSelectionEmpty() ? 0 : classList.getSelectedIndex() + 1;
+			classList.setSelectedIndex(next);
+			classList.ensureIndexIsVisible(next);
+		} else if (KeyBinds.SEARCH_DIALOG_PREVIOUS.matches(e)) {
+			int prev = classList.isSelectionEmpty() ? classList.getModel().getSize() : classList.getSelectedIndex() - 1;
+			classList.setSelectedIndex(prev);
+			classList.ensureIndexIsVisible(prev);
+		} else if (KeyBinds.EXIT.matches(e)) {
+			close();
+		}
 	}
 
 	private static final class SearchEntryImpl implements SearchEntry {

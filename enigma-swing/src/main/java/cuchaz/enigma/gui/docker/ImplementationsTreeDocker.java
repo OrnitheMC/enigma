@@ -1,4 +1,4 @@
-package cuchaz.enigma.gui.elements;
+package cuchaz.enigma.gui.docker;
 
 import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -8,10 +8,9 @@ import cuchaz.enigma.gui.renderer.ImplementationsTreeCellRenderer;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.I18n;
 
-public class ImplementationsTree extends AbstractInheritanceTree {
-	public ImplementationsTree(Gui gui) {
+public class ImplementationsTreeDocker extends AbstractInheritanceTreeDocker {
+	public ImplementationsTreeDocker(Gui gui) {
 		super(gui, new ImplementationsTreeCellRenderer(gui));
 	}
 
@@ -28,7 +27,12 @@ public class ImplementationsTree extends AbstractInheritanceTree {
 	}
 
 	@Override
-	protected String getPanelName() {
-		return I18n.translate("info_panel.tree.implementations");
+	public String getId() {
+		return Type.IMPLEMENTATIONS;
+	}
+
+	@Override
+	public Location getPreferredLocation() {
+		return new Location(Side.RIGHT, VerticalLocation.FULL);
 	}
 }

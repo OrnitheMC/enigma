@@ -1,13 +1,12 @@
 package cuchaz.enigma.gui.elements;
 
 import java.awt.Component;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 
 import javax.annotation.Nullable;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.google.common.collect.HashBiMap;
@@ -24,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 
 public class EditorTabbedPane {
-	private final JTabbedPane openFiles = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+	private final JTabbedPane openFiles = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 	private final HashBiMap<ClassEntry, EditorPanel> editors = HashBiMap.create();
 
 	private final EditorTabPopupMenu editorTabPopupMenu;
@@ -38,6 +37,7 @@ public class EditorTabbedPane {
 	}
 
 	public EditorPanel openClass(ClassEntry entry) {
+		EditorPanel activeEditor = getActiveEditor();
 		EditorPanel editorPanel = this.editors.computeIfAbsent(entry, e -> {
 			ClassHandle ch = this.gui.getController().getClassHandleProvider().openClass(entry);
 			if (ch == null) return null;
@@ -70,21 +70,18 @@ public class EditorTabbedPane {
 				}
 			});
 
-			ed.getEditor().addKeyListener(new KeyAdapter() {
-				@Override
-				public void keyPressed(KeyEvent e) {
-					if (KeyBinds.EDITOR_CLOSE_TAB.matches(e)) {
-						closeEditor(ed);
-					}
+			ed.getEditor().addKeyListener(GuiUtil.onKeyPress(keyEvent -> {
+				if (KeyBinds.EDITOR_CLOSE_TAB.matches(keyEvent)) {
+					closeEditor(ed);
 				}
-			});
+			}));
 
 			return ed;
 		});
 
-		if (editorPanel != null) {
+		if (editorPanel != null && activeEditor != editorPanel) {
 			this.openFiles.setSelectedComponent(this.editors.get(entry).getUi());
-			this.gui.showStructure(editorPanel);
+			this.gui.updateStructure(editorPanel);
 		}
 
 		return editorPanel;
@@ -93,7 +90,7 @@ public class EditorTabbedPane {
 	public void closeEditor(EditorPanel ed) {
 		this.openFiles.remove(ed.getUi());
 		this.editors.inverse().remove(ed);
-		this.gui.showStructure(this.getActiveEditor());
+		this.gui.updateStructure(this.getActiveEditor());
 		ed.destroy();
 	}
 
@@ -137,15 +134,15 @@ public class EditorTabbedPane {
 	}
 
 	private void onTabPressed(MouseEvent e) {
-		if (SwingUtilities.isRightMouseButton(e)) {
-			int i = this.openFiles.getUI().tabForCoordinate(this.openFiles, e.getX(), e.getY());
+		int i = this.openFiles.getUI().tabForCoordinate(this.openFiles, e.getX(), e.getY());
 
-			if (i != -1) {
+		if (i != -1) {
+			if (SwingUtilities.isRightMouseButton(e)) {
 				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 			}
-		}
 
-		this.gui.showStructure(this.getActiveEditor());
+			this.gui.showStructure(this.getActiveEditor());
+		}
 	}
 
 	public void retranslateUi() {

@@ -1,5 +1,8 @@
 package cuchaz.enigma.gui.elements;
 
+import cuchaz.enigma.gui.docker.Docker;
+import cuchaz.enigma.gui.docker.component.DockerSelector;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 
@@ -13,8 +16,13 @@ public class MainWindow {
 
 	private final JMenuBar menuBar = new JMenuBar();
 	private final StatusBar statusBar = new StatusBar();
+	private final DockerSelector rightDockerSelector;
+	private final DockerSelector leftDockerSelector;
 
 	public MainWindow(String title) {
+		this.rightDockerSelector = new DockerSelector(Docker.Side.RIGHT);
+		this.leftDockerSelector = new DockerSelector(Docker.Side.LEFT);
+
 		this.frame = new JFrame(title);
 		this.frame.setJMenuBar(this.menuBar);
 
@@ -22,25 +30,31 @@ public class MainWindow {
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(this.workArea, BorderLayout.CENTER);
 		contentPane.add(this.statusBar.getUi(), BorderLayout.SOUTH);
+		contentPane.add(this.rightDockerSelector.getPanel(), BorderLayout.EAST);
+		contentPane.add(this.leftDockerSelector.getPanel(), BorderLayout.WEST);
 	}
 
 	public void setVisible(boolean visible) {
 		this.frame.setVisible(visible);
 	}
 
-	public JMenuBar menuBar() {
+	public DockerSelector getDockerSelector(Docker.Side side) {
+		return side == Docker.Side.LEFT ? this.leftDockerSelector : this.rightDockerSelector;
+	}
+
+	public JMenuBar getMenuBar() {
 		return this.menuBar;
 	}
 
-	public StatusBar statusBar() {
+	public StatusBar getStatusBar() {
 		return this.statusBar;
 	}
 
-	public Container workArea() {
+	public Container getWorkArea() {
 		return this.workArea;
 	}
 
-	public JFrame frame() {
+	public JFrame getFrame() {
 		return this.frame;
 	}
 

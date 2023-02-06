@@ -81,6 +81,7 @@
 	"menu.help.about.title": "%s - About",
 	"menu.help.about.description": "A tool for deobfuscation of Java code",
 	"menu.help.about.version": "Version: %s",
+	"menu.help.about.version.external": "%s Version: %s",
 	"menu.help.github": "Github Page",
 	"menu.advanced": "Advanced",
  	"menu.advanced.map_locals.enable": "Enable Mapping Locals",
@@ -115,9 +116,6 @@
 	"editor.decompile_error": "An error was encountered while decompiling.",
 	"editor.remap_error": "An error was encountered while remapping.",
 
-	"info_panel.classes": "Classes",
-	"info_panel.classes.obfuscated": "Obfuscated Classes",
-	"info_panel.classes.deobfuscated": "De-obfuscated Classes",
 	"info_panel.identifier": "Identifier Info",
 	"info_panel.identifier.none": "No identifier selected",
 	"info_panel.identifier.variable": "Variable",
@@ -132,10 +130,6 @@
 	"info_panel.identifier.index": "Index",
 	"info_panel.editor.class.decompiling": "(decompiling...)",
 	"info_panel.editor.class.not_found": "Unable to find class:",
-	"info_panel.tree.structure": "Structure",
-	"info_panel.tree.inheritance": "Inheritance",
-	"info_panel.tree.implementations": "Implementations",
-	"info_panel.tree.calls": "Call Graph",
 
 	"popup.copied": "Copied!",
 
@@ -151,9 +145,6 @@
 	"structure.options.sorting.default": "Default",
 	"structure.options.sorting.a_z": "A to Z",
 	"structure.options.sorting.z_a": "Z to A",
-
-	"log_panel.messages": "Messages",
-	"log_panel.users": "Users",
 
 	"progress.operation": "%s - Operation in progress",
 	"progress.jar.indexing": "Indexing jar",
@@ -281,5 +272,18 @@
 	"keybind.menu.reload_mappings": "Reload mappings",
 	"keybind.menu.reload_all": "Reload Jar and mappings",
 	"keybind.menu.mapping_stats": "Mapping stats",
-	"keybind.menu.save": "Save mappings"
+	"keybind.menu.save": "Save mappings",
+
+	"docker.collab.send": "Send",
+	"docker.collab.title": "Collab",
+	"docker.collab.messages_title": "Messages",
+	"docker.collab.users_title": "Users",
+	"docker.collab.offline_text": "Enigma is currently running offline.",
+	"docker.calls.title": "Calls",
+	"docker.structure.title": "Structure",
+	"docker.inheritance.title": "Inheritance",
+	"docker.implementations.title": "Implementations",
+	"docker.all_classes.title": "Classes",
+	"docker.obfuscated_classes.title": "Obfuscated Classes",
+	"docker.deobfuscated_classes.title": "Deobfuscated Classes"
 }

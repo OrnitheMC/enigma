@@ -17,12 +17,6 @@ import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
-import cuchaz.enigma.api.service.ObfuscationTestService;
-import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -30,6 +24,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 
 import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.api.service.NameProposalService;
 import cuchaz.enigma.api.service.ObfuscationTestService;
@@ -137,6 +132,16 @@ public class EnigmaProject {
 		return droppedMappings;
 	}
 
+	public boolean isNavigable(Entry<?> obfEntry) {
+		if (obfEntry instanceof ClassEntry classEntry) {
+			if (isAnonymousOrLocal(classEntry)) {
+				return false;
+			}
+		}
+
+		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+	}
+
 	public boolean isRenamable(Entry<?> obfEntry) {
 		if (obfEntry instanceof MethodEntry method) {
 			// HACKHACK: hardcoded obfuscation format
@@ -145,9 +150,7 @@ public class EnigmaProject {
 		if (obfEntry instanceof LocalVariableEntry variable) {
 			return enigma.mapLocals() || variable.isArgument();
 		} else if (obfEntry instanceof ClassEntry classEntry) {
-			EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
-			// Only local and anonymous classes may have the EnclosingMethod attribute
-			if (enclosingMethodIndex.hasEnclosingMethod(classEntry)) {
+			if (isAnonymousOrLocal(classEntry)) {
 				return false;
 			}
 		}
@@ -185,6 +188,12 @@ public class EnigmaProject {
 
 	public boolean isSynthetic(Entry<?> entry) {
 		return jarIndex.getEntryIndex().hasEntry(entry) && jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+	}
+
+	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
+		EnclosingMethodIndex enclosingMethodIndex = jarIndex.getEnclosingMethodIndex();
+		// Only local and anonymous classes may have the EnclosingMethod attribute
+		return enclosingMethodIndex.hasEnclosingMethod(classEntry);
 	}
 
 	public JarExport exportRemappedJar(ProgressListener progress) {
