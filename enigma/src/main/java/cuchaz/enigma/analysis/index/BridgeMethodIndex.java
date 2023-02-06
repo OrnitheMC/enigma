@@ -58,7 +58,7 @@ public class BridgeMethodIndex implements JarIndexer {
 	private void indexSyntheticMethod(MethodDefEntry syntheticMethod, AccessFlags access) {
 		MethodEntry specializedMethod = findSpecializedMethod(syntheticMethod);
 
-		if (specializedMethod == null || specializedToBridge.containsKey(specializedMethod)) {
+		if (specializedMethod == null) {
 			return;
 		}
 
