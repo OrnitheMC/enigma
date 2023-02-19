@@ -1,6 +1,5 @@
 package cuchaz.enigma.gui;
 
-import cuchaz.enigma.gui.warning.WarningType;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.utils.Pair;
 
@@ -26,9 +25,9 @@ public class TooltipEditorPane extends JEditorPane {
     public String getToolTipText(MouseEvent event) {
         Point mousePosition = new Point(event.getX(), event.getY());
         for (Pair<LinkedHashSet<Rectangle2D>, String> pair : warningMap.values()) {
-            for (Rectangle2D rectangle : pair.getKey()){
+            for (Rectangle2D rectangle : pair.a()){
                 if (rectangle.contains(mousePosition)) {
-                    return pair.getValue();
+                    return pair.b();
                 }
             }
         }
@@ -69,7 +68,7 @@ public class TooltipEditorPane extends JEditorPane {
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
         if (map.containsKey(obfName)) {
-            map.get(obfName).getKey().add(tokenBox);
+            map.get(obfName).a().add(tokenBox);
         } else {
             map.put(obfName, new Pair<>(new LinkedHashSet<>(Arrays.asList(tokenBox)), message));
         }
