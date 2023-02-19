@@ -24,7 +24,6 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.gui.GuiController;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.elements.ValidatableTextArea;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -40,9 +39,9 @@ public class JavadocDialog {
 	private final JFrame parent;
 	private RenderedJavadocDialog renderedJavadocDialog = null;
 
-	private final ValidatableTextArea text;
+	private final JTextArea text;
 
-	private final ValidationContext vc = new ValidationContext();
+	private final ValidationContext vc;
 
 	private JavadocDialog(JFrame parent, GuiController controller, Entry<?> entry, String preset) {
 		this.parent = parent;
@@ -50,10 +49,11 @@ public class JavadocDialog {
 		this.ui.addWindowListener(new RenderedJavadocWindowListener());
 		this.controller = controller;
 		this.entry = entry;
-		this.text = new ValidatableTextArea(10, 40);
+		this.text = new JTextArea(10, 40);
+		this.vc = new ValidationContext(controller.getGui().getNotificationManager());
 
 		// set up dialog
-		Container contentPane = ui.getContentPane();
+		Container contentPane = this.ui.getContentPane();
 		contentPane.setLayout(new BorderLayout());
 
 		// editor panel
@@ -64,13 +64,13 @@ public class JavadocDialog {
 		this.text.addKeyListener(GuiUtil.onKeyPress(event -> {
 			if (KeyBinds.DIALOG_SAVE.matches(event)) {
 				if (event.isControlDown()) {
-					doSave();
-					if (vc.canProceed()) {
-						close();
+					this.doSave();
+					if (this.vc.canProceed()) {
+						this.close();
 					}
 				}
 			} else if (KeyBinds.EXIT.matches(event)) {
-				close();
+				this.close();
 			}
 		}));
 		this.text.setFont(UiConfig.activeUseCustomFonts() ? UiConfig.getEditorFont() : UiConfig.getFallbackEditorFont());
@@ -81,11 +81,11 @@ public class JavadocDialog {
 		buttonsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("javadocs.instruction"))));
 
 		JButton cancelButton = new JButton(I18n.translate("prompt.cancel"));
-		cancelButton.addActionListener(event -> close());
+		cancelButton.addActionListener(event -> this.close());
 		buttonsPanel.add(cancelButton);
 
 		JButton saveButton = new JButton(I18n.translate("prompt.save"));
-		saveButton.addActionListener(event -> doSave());
+		saveButton.addActionListener(event -> this.doSave());
 		buttonsPanel.add(saveButton);
 
 		JButton renderButton = new JButton(I18n.translate("render"));
@@ -102,24 +102,24 @@ public class JavadocDialog {
 		for (JavadocTag tag : JavadocTag.values()) {
 			JButton tagButton = new JButton(tag.getText());
 			tagButton.addActionListener(action -> {
-				boolean textSelected = text.getSelectedText() != null;
+				boolean textSelected = this.text.getSelectedText() != null;
 				String tagText = tag.isInline() ? "{" + tag.getText() + " }" : tag.getText() + " ";
 
 				if (textSelected) {
 					if (tag.isInline()) {
-						tagText = "{" + tag.getText() + " " + text.getSelectedText() + "}";
+						tagText = "{" + tag.getText() + " " + this.text.getSelectedText() + "}";
 					} else {
-						tagText = tag.getText() + " " + text.getSelectedText();
+						tagText = tag.getText() + " " + this.text.getSelectedText();
 					}
-					text.replaceSelection(tagText);
+					this.text.replaceSelection(tagText);
 				} else {
-					text.insert(tagText, text.getCaretPosition());
+					this.text.insert(tagText, this.text.getCaretPosition());
 				}
 
 				if (tag.isInline()) {
-					text.setCaretPosition(text.getCaretPosition() - 1);
+					this.text.setCaretPosition(this.text.getCaretPosition() - 1);
 				}
-				text.grabFocus();
+				this.text.grabFocus();
 			});
 			tagsMenu.add(tagButton);
 		}
@@ -132,8 +132,8 @@ public class JavadocDialog {
 		}
 		htmlList.addActionListener(action -> {
 			String tagText = "<" + htmlList.getSelectedItem().toString() + ">";
-			text.insert(tagText, text.getCaretPosition());
-			text.grabFocus();
+			this.text.insert(tagText, this.text.getCaretPosition());
+			this.text.grabFocus();
 		});
 		tagsMenu.add(htmlList);
 
@@ -147,13 +147,12 @@ public class JavadocDialog {
 
 	// Called when the "Save" button gets clicked.
 	public void doSave() {
-		this.closeChildren();
-		vc.reset();
-		validate();
-		if (!vc.canProceed()) return;
-		save();
-		if (!vc.canProceed()) return;
-		close();
+		this.vc.reset();
+		this.validate();
+		if (!this.vc.canProceed()) return;
+		this.save();
+		if (!this.vc.canProceed()) return;
+		this.close();
 	}
 
 	public void render() {
@@ -176,18 +175,15 @@ public class JavadocDialog {
 	}
 
 	public void validate() {
-		vc.setActiveElement(text);
-
-		controller.validateChange(vc, getEntryChange());
+		this.controller.validateChange(this.vc, this.getEntryChange());
 	}
 
 	public void save() {
-		vc.setActiveElement(text);
-		controller.applyChange(vc, getEntryChange());
+		this.controller.applyChange(this.vc, this.getEntryChange());
 	}
 
 	private EntryChange<?> getEntryChange() {
-		return text.getText().isBlank() ? EntryChange.modify(entry).clearJavadoc() : EntryChange.modify(entry).withJavadoc(text.getText());
+		return this.text.getText().isBlank() ? EntryChange.modify(this.entry).clearJavadoc() : EntryChange.modify(this.entry).withJavadoc(this.text.getText());
 	}
 
 	public static void show(JFrame parent, GuiController controller, EntryReference<Entry<?>, Entry<?>> entry) {
@@ -195,7 +191,6 @@ public class JavadocDialog {
 		String text = Strings.nullToEmpty(mapping.javadoc());
 
 		JavadocDialog dialog = new JavadocDialog(parent, controller, entry.entry, text);
-		//dialog.ui.doLayout();
 		dialog.ui.setVisible(true);
 		dialog.text.grabFocus();
 	}
@@ -234,9 +229,9 @@ public class JavadocDialog {
 		SEE(false),
 		THROWS(false);
 
-		private boolean inline;
+		private final boolean inline;
 
-		private JavadocTag(boolean inline) {
+		JavadocTag(boolean inline) {
 			this.inline = inline;
 		}
 

@@ -14,10 +14,7 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
-import javax.annotation.Nullable;
-
 public class MappingValidator {
-
 	private final EntryTree<EntryMapping> obfToDeobf;
 	private final Translator deobfuscator;
 	private final JarIndex index;
@@ -33,28 +30,33 @@ public class MappingValidator {
 
 		for (Entry<?> equivalentEntry : index.getEntryResolver().resolveEquivalentEntries(entry)) {
 			equivalentEntry.validateName(vc, name);
-			error |= validateUnique(vc, equivalentEntry, name);
+			error |= this.validateUnique(vc, equivalentEntry, name);
 		}
 
 		return error;
 	}
 
 	private boolean validateUnique(ValidationContext vc, Entry<?> entry, String name) {
-		Entry<?> translatedEntry = deobfuscator.translate(entry);
 		ClassEntry containingClass = entry.getContainingClass();
-		Collection<ClassEntry> relatedClasses = getRelatedClasses(containingClass);
+		Collection<ClassEntry> relatedClasses = this.getRelatedClasses(containingClass);
 
 		boolean error = false;
-		Entry<?> shadowedEntry;
 
 		for (ClassEntry relatedClass : relatedClasses) {
+			if (this.isStatic(entry) && relatedClass != containingClass) {
+				// static entries can only conflict with entries in the same class
+				continue;
+			}
+
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
-			List<? extends Entry<?>> translatedSiblings = obfToDeobf.getSiblings(relatedEntry).stream()
+			Entry<?> translatedEntry = this.deobfuscator.translate(relatedEntry);
+
+			List<? extends Entry<?>> translatedSiblings = this.obfToDeobf.getSiblings(relatedEntry).stream()
 					.filter(e -> !e.equals(entry)) // If the entry is a class, this could contain itself
-					.map(deobfuscator::translate)
+					.map(this.deobfuscator::translate)
 					.toList();
 
-			if (!isUnique(translatedEntry, translatedSiblings, name)) {
+			if (!this.isUnique(translatedEntry, translatedSiblings, name)) {
 				Entry<?> parent = translatedEntry.getParent();
 
 				if (parent != null) {
@@ -64,13 +66,6 @@ public class MappingValidator {
 				}
 
 				error = true;
-			} else if ((shadowedEntry = getShadowedEntry(translatedEntry, translatedSiblings, name)) != null) {
-				Entry<?> parent = shadowedEntry.getParent();
-				if (parent != null) {
-					vc.raise(Message.SHADOWED_NAME_CLASS, name, parent);
-				} else {
-					vc.raise(Message.SHADOWED_NAME, name);
-				}
 			}
 		}
 
@@ -78,7 +73,7 @@ public class MappingValidator {
 	}
 
 	private Collection<ClassEntry> getRelatedClasses(ClassEntry classEntry) {
-		InheritanceIndex inheritanceIndex = index.getInheritanceIndex();
+		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
 
 		Collection<ClassEntry> relatedClasses = new HashSet<>();
 		relatedClasses.add(classEntry);
@@ -90,7 +85,7 @@ public class MappingValidator {
 
 	private boolean isUnique(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
-			if (canConflict(entry, sibling) && sibling.getName().equals(name)) {
+			if (this.canConflict(entry, sibling) && sibling.getName().equals(name)) {
 				return false;
 			}
 		}
@@ -101,22 +96,8 @@ public class MappingValidator {
 		return entry.canConflictWith(sibling, this::isStatic);
 	}
 
-	@Nullable
-	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
-		for (Entry<?> sibling : siblings) {
-			if (canShadow(entry, sibling) && sibling.getName().equals(name)) {
-				return sibling;
-			}
-		}
-		return null;
-	}
-
-	private boolean canShadow(Entry<?> entry, Entry<?> sibling) {
-		return entry.canShadow(sibling);
-	}
-
 	private boolean isStatic(Entry<?> entry) {
-		AccessFlags accessFlags = index.getEntryIndex().getEntryAccess(entry);
+		AccessFlags accessFlags = this.index.getEntryIndex().getEntryAccess(entry);
 		return accessFlags != null && accessFlags.isStatic();
 	}
 }

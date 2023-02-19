@@ -19,10 +19,10 @@ import com.github.swingdpi.plaf.WindowsTweaker;
 import de.sciss.syntaxpane.DefaultSyntaxKit;
 
 import cuchaz.enigma.gui.config.UiConfig;
+import org.tinylog.Logger;
 
 public class ScaleUtil {
-
-	private static List<ScaleChangeListener> listeners = new ArrayList<>();
+	private static final List<ScaleChangeListener> listeners = new ArrayList<>();
 
 	public static void setScaleFactor(float scaleFactor) {
 		float oldScale = UiConfig.getScaleFactor();
@@ -104,7 +104,7 @@ public class ScaleUtil {
 			font = font.deriveFont(12 * scale);
 			defaultFontField.set(null, font);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to apply scaling!");
 		}
 	}
 

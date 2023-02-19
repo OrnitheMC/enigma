@@ -6,12 +6,11 @@
  * http://www.gnu.org/licenses/lgpl.html
  *
  * Contributors:
- *     Jeff Martin - initial API and implementation
+ *	 Jeff Martin - initial API and implementation
  ******************************************************************************/
 
 package cuchaz.enigma;
 
-import com.google.common.collect.Lists;
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
@@ -20,10 +19,12 @@ import cuchaz.enigma.source.*;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.Pair;
+import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public class TokenChecker {
 		// createDebugFile(source, reference.context.getContainingClass());
 
 		// get the token values
-		List<String> values = Lists.newArrayList();
+		List<String> values = new ArrayList<>();
 		for (Token token : index.getReferenceTokens((EntryReference<Entry<?>, Entry<?>>) reference)) {
 			values.add(string.substring(token.start, token.end));
 		}
@@ -88,10 +89,9 @@ public class TokenChecker {
 			String name = classEntry.getContextualName();
 			Path path = Files.createTempFile("class-" + name.replace("$", "_") + "-", ".html");
 			Files.writeString(path, SourceTestUtil.toHtml(source, name));
-			System.out.println(path.toUri());
+			Logger.info("Debug file created: {}", path.toUri());
 		} catch (Exception e) {
-			System.err.println("Failed to create debug source file for " + classEntry);
-			e.printStackTrace();
+			Logger.error(e, "Failed to create debug source file for {}", classEntry);
 		}
 	}
 }

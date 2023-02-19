@@ -15,7 +15,9 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -27,8 +29,7 @@ import java.util.stream.Stream;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import com.google.common.collect.Lists;
-
+import com.google.common.io.MoreFiles;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.EnigmaProject;
@@ -40,6 +41,8 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.newabstraction.EntryValidation;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
@@ -66,8 +69,10 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Utils;
-import cuchaz.enigma.utils.validation.PrintValidatable;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
+import org.tinylog.Logger;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -96,19 +101,19 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public boolean isDirty() {
-		return project != null && project.getMapper().isDirty();
+		return this.project != null && this.project.getMapper().isDirty();
 	}
 
 	public CompletableFuture<Void> openJar(final Path jarPath) {
 		this.gui.onStartOpenJar();
 
-		return ProgressDialog.runOffThread(gui.getFrame(), progress -> {
-			project = enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
-			indexTreeBuilder = new IndexTreeBuilder(project.getJarIndex());
-			chp = new ClassHandleProvider(project, UiConfig.getDecompiler().service);
+		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
+			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
+			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
 			SwingUtilities.invokeLater(() -> {
-				gui.onFinishOpenJar(jarPath.getFileName().toString());
-				refreshClasses();
+				this.gui.onFinishOpenJar(jarPath.getFileName().toString());
+				this.refreshClasses();
 			});
 		});
 	}
@@ -120,12 +125,31 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.onCloseJar();
 	}
 
-	public CompletableFuture<Void> openMappings(MappingFormat format, Path path) {
-		if (this.project == null) return CompletableFuture.completedFuture(null);
+	public void openMappings(Path path) {
+		if (Files.isDirectory(path)) {
+			this.openMappings(MappingFormat.ENIGMA_DIRECTORY, path);
+		} else {
+			String extension = MoreFiles.getFileExtension(path).toLowerCase();
+
+			switch (extension) {
+				case "zip" -> this.openMappings(MappingFormat.ENIGMA_ZIP, path);
+				case "tiny" -> this.openMappings(MappingFormat.TINY_FILE, path);
+				case "tinyv2" -> this.openMappings(MappingFormat.TINY_V2, path);
+				default -> this.openMappings(MappingFormat.ENIGMA_FILE, path);
+			}
+		}
+	}
+
+	public void openMappings(MappingFormat format, Path path) {
+		if (this.project == null) {
+			return;
+		}
 
 		this.gui.setMappingsFile(path);
+		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
+		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -135,7 +159,7 @@ public class GuiController implements ClientPacketHandler {
 				this.loadedMappingFormat = format;
 				this.loadedMappingPath = path;
 
-				refreshClasses();
+				this.refreshClasses();
 				this.chp.invalidateJavadoc();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
@@ -148,12 +172,12 @@ public class GuiController implements ClientPacketHandler {
 		if (this.project == null) return;
 
 		this.project.setMappings(mappings);
-		refreshClasses();
+		this.refreshClasses();
 		this.chp.invalidateJavadoc();
 	}
 
 	public CompletableFuture<Void> saveMappings(Path path) {
-		return saveMappings(path, this.loadedMappingFormat);
+		return this.saveMappings(path, this.loadedMappingFormat);
 	}
 
 	/**
@@ -194,7 +218,7 @@ public class GuiController implements ClientPacketHandler {
 		this.project.setMappings(null);
 
 		this.gui.setMappingsFile(null);
-		refreshClasses();
+		this.refreshClasses();
 		this.chp.invalidateJavadoc();
 	}
 
@@ -232,7 +256,7 @@ public class GuiController implements ClientPacketHandler {
 						try {
 							source.writeTo(source.resolvePath(path));
 						} catch (IOException e) {
-							e.printStackTrace();
+							Logger.error(e);
 						}
 					});
 		});
@@ -286,7 +310,7 @@ public class GuiController implements ClientPacketHandler {
 		if (entry == null) {
 			throw new IllegalArgumentException("Entry cannot be null!");
 		}
-		openReference(EntryReference.declaration(entry, entry.getName()));
+		this.openReference(EntryReference.declaration(entry, entry.getName()));
 	}
 
 	/**
@@ -321,7 +345,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void openPreviousReference() {
-		if (hasPreviousReference()) {
+		if (this.hasPreviousReference()) {
 			this.gui.showReference(this.referenceHistory.goBack());
 		}
 	}
@@ -331,7 +355,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void openNextReference() {
-		if (hasNextReference()) {
+		if (this.hasNextReference()) {
 			this.gui.showReference(this.referenceHistory.goForward());
 		}
 	}
@@ -345,21 +369,21 @@ public class GuiController implements ClientPacketHandler {
 			// entry is not in the jar. Ignore it
 			return;
 		}
-		openDeclaration(entry);
+		this.openDeclaration(entry);
 	}
 
 	public void navigateTo(EntryReference<Entry<?>, Entry<?>> reference) {
 		if (!this.project.isNavigable(reference.getLocationClassEntry())) {
 			return;
 		}
-		openReference(reference);
+		this.openReference(reference);
 	}
 
 	public void refreshClasses() {
 		if (this.project == null) return;
 
-		List<ClassEntry> obfClasses = Lists.newArrayList();
-		List<ClassEntry> deobfClasses = Lists.newArrayList();
+		List<ClassEntry> obfClasses = new ArrayList<>();
+		List<ClassEntry> deobfClasses = new ArrayList<>();
 		this.addSeparatedClasses(obfClasses, deobfClasses);
 		this.gui.setObfClasses(obfClasses);
 		this.gui.setDeobfClasses(deobfClasses);
@@ -412,7 +436,7 @@ public class GuiController implements ClientPacketHandler {
 
 	public MethodInheritanceTreeNode getMethodInheritance(MethodEntry entry) {
 		Translator translator = this.project.getMapper().getDeobfuscator();
-		MethodInheritanceTreeNode rootNode = indexTreeBuilder.buildMethodInheritance(translator, entry);
+		MethodInheritanceTreeNode rootNode = this.indexTreeBuilder.buildMethodInheritance(translator, entry);
 		return MethodInheritanceTreeNode.findNode(rootNode, entry);
 	}
 
@@ -423,7 +447,7 @@ public class GuiController implements ClientPacketHandler {
 			return null;
 		}
 		if (rootNodes.size() > 1) {
-			System.err.println("WARNING: Method " + entry + " implements multiple interfaces. Only showing first one.");
+			Logger.warn("Method {} implements multiple interfaces. Only showing first one.", entry);
 		}
 		return MethodImplementationsTreeNode.findNode(rootNodes.get(0), entry);
 	}
@@ -451,8 +475,7 @@ public class GuiController implements ClientPacketHandler {
 
 	@Override
 	public boolean applyChangeFromServer(EntryChange<?> change) {
-		ValidationContext vc = new ValidationContext();
-		vc.setActiveElement(PrintValidatable.INSTANCE);
+		ValidationContext vc = new ValidationContext(this.gui.getNotificationManager());
 		this.applyChange0(vc, change);
 		this.gui.updateStructure(this.gui.getActiveEditor());
 
@@ -477,7 +500,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change) {
-		validateChange(vc, change);
+		this.validateChange(vc, change);
 		if (!vc.canProceed()) return;
 
 		Entry<?> target = change.getTarget();
@@ -541,10 +564,10 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void createClient(String username, String ip, int port, char[] password) throws IOException {
-		client = new EnigmaClient(this, ip, port);
-		client.connect();
-		client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, username));
-		gui.setConnectionState(ConnectionState.CONNECTED);
+		this.client = new EnigmaClient(this, ip, port);
+		this.client.connect();
+		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, username));
+		this.gui.setConnectionState(ConnectionState.CONNECTED);
 	}
 
 	public void createServer(int port, char[] password) throws IOException {
@@ -576,6 +599,12 @@ public class GuiController implements ClientPacketHandler {
 			}
 			this.gui.setConnectionState(ConnectionState.NOT_CONNECTED);
 		});
+
+		this.gui.setUserList(new ArrayList<>());
+		if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
+		}
+		Docker.getDocker(CollabDocker.class).setUp();
 	}
 
 	@Override
@@ -586,12 +615,16 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	@Override
-	public void addMessage(Message message) {
+	public void addMessage(ServerMessage message) {
 		this.gui.addMessage(message);
 	}
 
 	@Override
 	public void updateUserList(List<String> users) {
 		this.gui.setUserList(users);
+	}
+
+	public Gui getGui() {
+		return this.gui;
 	}
 }

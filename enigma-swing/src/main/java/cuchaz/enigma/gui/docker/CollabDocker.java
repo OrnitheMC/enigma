@@ -87,7 +87,7 @@ public class CollabDocker extends Docker {
 		AbstractAction sendListener = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				sendPendingMessage();
+				CollabDocker.this.sendPendingMessage();
 			}
 		};
 		this.pendingMessageBox.addActionListener(sendListener);
@@ -120,7 +120,7 @@ public class CollabDocker extends Docker {
 
 	@Override
 	public String getId() {
-		return Type.COLLAB;
+		return "collab";
 	}
 
 	private void sendPendingMessage() {
@@ -164,8 +164,8 @@ public class CollabDocker extends Docker {
 	 * sets up the panel for its offline or online state
 	 */
 	public void setUp() {
-		if (gui.isOffline() != this.offline) {
-			this.offline = gui.isOffline();
+		if (this.gui.isOffline() != this.offline) {
+			this.offline = this.gui.isOffline();
 			if (this.panel != null) {
 				this.remove(this.panel);
 			}

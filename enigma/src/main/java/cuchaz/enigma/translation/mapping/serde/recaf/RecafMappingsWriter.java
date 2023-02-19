@@ -12,6 +12,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.tinylog.Logger;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RecafMappingsWriter implements MappingsWriter {
-
 	public static final RecafMappingsWriter INSTANCE = new RecafMappingsWriter();
 
 	@Override
@@ -29,16 +29,16 @@ public class RecafMappingsWriter implements MappingsWriter {
 			Files.deleteIfExists(path);
 			Files.createFile(path);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to create file {}", path);
 		}
 
 		try (BufferedWriter writer = Files.newBufferedWriter(path)) {
 			Lists.newArrayList(mappings)
 					.stream()
 					.map(EntryTreeNode::getEntry)
-					.forEach(entry -> writeEntry(writer, mappings, entry));
+					.forEach(entry -> this.writeEntry(writer, mappings, entry));
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to write to file {}", path);
 		}
 	}
 
@@ -53,13 +53,11 @@ public class RecafMappingsWriter implements MappingsWriter {
 		try {
 			if (mapping != null && mapping.targetName() != null) {
 				if (entry instanceof ClassEntry classEntry) {
-
 					writer.write(classEntry.getFullName());
 					writer.write(" ");
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof FieldEntry fieldEntry) {
-
 					writer.write(fieldEntry.getFullName());
 					writer.write(" ");
 					writer.write(fieldEntry.getDesc().toString());
@@ -67,7 +65,6 @@ public class RecafMappingsWriter implements MappingsWriter {
 					writer.write(mapping.targetName());
 
 				} else if (entry instanceof MethodEntry methodEntry) {
-
 					writer.write(methodEntry.getFullName());
 					writer.write(methodEntry.getDesc().toString());
 					writer.write(" ");
@@ -77,9 +74,9 @@ public class RecafMappingsWriter implements MappingsWriter {
 				writer.write("\n");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.error(e, "Failed to write to file");
 		}
 
-		node.getChildren().forEach(child -> writeEntry(writer, mappings, child));
+		node.getChildren().forEach(child -> this.writeEntry(writer, mappings, child));
 	}
 }

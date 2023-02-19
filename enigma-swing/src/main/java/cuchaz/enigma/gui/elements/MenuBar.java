@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import javax.swing.*;
 
 import cuchaz.enigma.gui.ConnectionState;
 import cuchaz.enigma.gui.Gui;
+import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.config.Decompiler;
 import cuchaz.enigma.gui.config.LookAndFeel;
 import cuchaz.enigma.gui.config.NetConfig;
@@ -28,13 +30,16 @@ import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 
 public class MenuBar {
-
 	private final JMenu fileMenu = new JMenu();
 	private final JMenuItem jarOpenItem = new JMenuItem();
 	private final JMenuItem jarCloseItem = new JMenuItem();
 	private final JMenu openMenu = new JMenu();
+	private final JMenu openRecentMenu = new JMenu();
+	private final JMenuItem maxRecentFilesItem = new JMenuItem();
 	private final JMenuItem saveMappingsItem = new JMenuItem();
 	private final JMenu saveMappingsAsMenu = new JMenu();
 	private final JMenuItem closeMappingsItem = new JMenuItem();
@@ -54,6 +59,7 @@ public class MenuBar {
 	private final JMenu themesMenu = new JMenu();
 	private final JMenu languagesMenu = new JMenu();
 	private final JMenu scaleMenu = new JMenu();
+	private final JMenu notificationsMenu = new JMenu();
 	private final JMenuItem fontItem = new JMenuItem();
 	private final JMenuItem customScaleItem = new JMenuItem();
 
@@ -84,14 +90,19 @@ public class MenuBar {
 		this.retranslateUi();
 
 		prepareOpenMenu(this.openMenu, gui);
+		this.reloadOpenRecentMenu(gui);
 		prepareSaveMappingsAsMenu(this.saveMappingsAsMenu, this.saveMappingsItem, gui);
 		prepareDecompilerMenu(this.decompilerMenu, this.decompilerSettingsItem, gui);
 		prepareThemesMenu(this.themesMenu, gui);
 		prepareLanguagesMenu(this.languagesMenu);
 		prepareScaleMenu(this.scaleMenu, gui);
+		prepareNotificationsMenu(this.notificationsMenu);
 
 		this.fileMenu.add(this.jarOpenItem);
 		this.fileMenu.add(this.jarCloseItem);
+		this.fileMenu.addSeparator();
+		this.fileMenu.add(this.openRecentMenu);
+		this.fileMenu.add(this.maxRecentFilesItem);
 		this.fileMenu.addSeparator();
 		this.fileMenu.add(this.openMenu);
 		this.fileMenu.add(this.saveMappingsItem);
@@ -116,6 +127,7 @@ public class MenuBar {
 
 		this.viewMenu.add(this.themesMenu);
 		this.viewMenu.add(this.languagesMenu);
+		this.viewMenu.add(this.notificationsMenu);
 		this.scaleMenu.add(this.customScaleItem);
 		this.viewMenu.add(this.scaleMenu);
 		this.viewMenu.add(this.fontItem);
@@ -138,35 +150,32 @@ public class MenuBar {
 		this.helpMenu.add(this.githubItem);
 		ui.add(this.helpMenu);
 
-		setKeyBinds();
+		this.setKeyBinds();
 
-		this.jarOpenItem.addActionListener(_e -> this.onOpenJarClicked());
-		this.jarCloseItem.addActionListener(_e -> this.gui.getController().closeJar());
-		this.saveMappingsItem.addActionListener(_e -> this.onSaveMappingsClicked());
-		this.closeMappingsItem.addActionListener(_e -> this.onCloseMappingsClicked());
-		this.dropMappingsItem.addActionListener(_e -> this.gui.getController().dropMappings());
-		this.reloadMappingsItem.addActionListener(_e -> this.onReloadMappingsClicked());
-		this.reloadAllItem.addActionListener(_e -> this.onReloadAllClicked());
-		this.exportSourceItem.addActionListener(_e -> this.onExportSourceClicked());
-		this.exportJarItem.addActionListener(_e -> this.onExportJarClicked());
-		this.statsItem.addActionListener(_e -> StatsDialog.show(this.gui));
-		this.configureKeyBindsItem.addActionListener(_e -> ConfigureKeyBindsDialog.show(this.gui));
-		this.exitItem.addActionListener(_e -> this.gui.close());
-		this.decompilerSettingsItem.addActionListener(_e -> DecompilerSettingsDialog.show(this.gui));
-		this.customScaleItem.addActionListener(_e -> this.onCustomScaleClicked());
-		this.fontItem.addActionListener(_e -> this.onFontClicked(this.gui));
-
-		this.mapLocalsItem.addActionListener(_e -> this.toggleMapLocals());
-
-		this.searchItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.CLASS));
-		this.searchClassItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.CLASS));
-		this.searchMethodItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.METHOD));
-		this.searchFieldItem.addActionListener(_e -> this.onSearchClicked(SearchDialog.SearchType.FIELD));
-
-		this.connectItem.addActionListener(_e -> this.onConnectClicked());
-		this.startServerItem.addActionListener(_e -> this.onStartServerClicked());
-		this.aboutItem.addActionListener(_e -> AboutDialog.show(this.gui.getFrame()));
-		this.githubItem.addActionListener(_e -> this.onGithubClicked());
+		this.jarOpenItem.addActionListener(e -> this.onOpenJarClicked());
+		this.jarCloseItem.addActionListener(e -> this.gui.getController().closeJar());
+		this.maxRecentFilesItem.addActionListener(e -> this.onMaxRecentFilesClicked());
+		this.saveMappingsItem.addActionListener(e -> this.onSaveMappingsClicked());
+		this.closeMappingsItem.addActionListener(e -> this.onCloseMappingsClicked());
+		this.dropMappingsItem.addActionListener(e -> this.gui.getController().dropMappings());
+		this.reloadMappingsItem.addActionListener(e -> this.onReloadMappingsClicked());
+		this.reloadAllItem.addActionListener(e -> this.onReloadAllClicked());
+		this.exportSourceItem.addActionListener(e -> this.onExportSourceClicked());
+		this.exportJarItem.addActionListener(e -> this.onExportJarClicked());
+		this.statsItem.addActionListener(e -> StatsDialog.show(this.gui));
+		this.configureKeyBindsItem.addActionListener(e -> ConfigureKeyBindsDialog.show(this.gui));
+		this.exitItem.addActionListener(e -> this.gui.close());
+		this.decompilerSettingsItem.addActionListener(e -> DecompilerSettingsDialog.show(this.gui));
+		this.customScaleItem.addActionListener(e -> this.onCustomScaleClicked());
+		this.fontItem.addActionListener(e -> this.onFontClicked(this.gui));
+		this.mapLocalsItem.addActionListener(e -> this.toggleMapLocals());
+		this.searchClassItem.addActionListener(e -> this.onSearchClicked(SearchDialog.SearchType.CLASS));
+		this.searchMethodItem.addActionListener(e -> this.onSearchClicked(SearchDialog.SearchType.METHOD));
+		this.searchFieldItem.addActionListener(e -> this.onSearchClicked(SearchDialog.SearchType.FIELD));
+		this.connectItem.addActionListener(e -> this.onConnectClicked());
+		this.startServerItem.addActionListener(e -> this.onStartServerClicked());
+		this.aboutItem.addActionListener(e -> AboutDialog.show(this.gui.getFrame()));
+		this.githubItem.addActionListener(e -> this.onGithubClicked());
 	}
 
 	public void setKeyBinds() {
@@ -207,6 +216,8 @@ public class MenuBar {
 		this.fileMenu.setText(I18n.translate("menu.file"));
 		this.jarOpenItem.setText(I18n.translate("menu.file.jar.open"));
 		this.jarCloseItem.setText(I18n.translate("menu.file.jar.close"));
+		this.openRecentMenu.setText(I18n.translate("menu.file.open_recent_project"));
+		this.maxRecentFilesItem.setText(I18n.translate("menu.file.max_recent_projects"));
 		this.openMenu.setText(I18n.translate("menu.file.mappings.open"));
 		this.saveMappingsItem.setText(I18n.translate("menu.file.mappings.save"));
 		this.saveMappingsAsMenu.setText(I18n.translate("menu.file.mappings.save_as"));
@@ -225,6 +236,7 @@ public class MenuBar {
 
 		this.viewMenu.setText(I18n.translate("menu.view"));
 		this.themesMenu.setText(I18n.translate("menu.view.themes"));
+		this.notificationsMenu.setText(I18n.translate("menu.view.notifications"));
 		this.languagesMenu.setText(I18n.translate("menu.view.languages"));
 		this.scaleMenu.setText(I18n.translate("menu.view.scale"));
 		this.fontItem.setText(I18n.translate("menu.view.font"));
@@ -252,7 +264,7 @@ public class MenuBar {
 		JFileChooser d = this.gui.jarFileChooser;
 		d.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		d.setVisible(true);
-		int result = d.showOpenDialog(gui.getFrame());
+		int result = d.showOpenDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -267,6 +279,23 @@ public class MenuBar {
 				this.gui.getController().openJar(path);
 			}
 			UiConfig.setLastSelectedDir(d.getCurrentDirectory().getAbsolutePath());
+		}
+	}
+
+	private void onMaxRecentFilesClicked() {
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.set"), UiConfig.getMaxRecentFiles());
+
+		if (input != null) {
+			try {
+				int max = Integer.parseInt(input);
+				if (max < 0) {
+					throw new NumberFormatException();
+				}
+
+				UiConfig.setMaxRecentFiles(max);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate("menu.file.dialog.max_recent_projects.invalid"), I18n.translate("menu.file.dialog.error"), JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 
@@ -289,15 +318,15 @@ public class MenuBar {
 	}
 
 	private void onCloseMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
 	}
 
 	private void onReloadMappingsClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
 	}
 
 	private void onReloadAllClicked() {
-		openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
 	}
 
 	private void onExportSourceClicked() {
@@ -311,7 +340,7 @@ public class MenuBar {
 	private void onExportJarClicked() {
 		this.gui.exportJarFileChooser.setCurrentDirectory(new File(UiConfig.getLastSelectedDir()));
 		this.gui.exportJarFileChooser.setVisible(true);
-		int result = this.gui.exportJarFileChooser.showSaveDialog(gui.getFrame());
+		int result = this.gui.exportJarFileChooser.showSaveDialog(this.gui.getFrame());
 
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -338,16 +367,6 @@ public class MenuBar {
 	}
 
 	private void onFontClicked(Gui gui) {
-//		FontDialog fd = new FontDialog(gui.getFrame(), "Choose Font", true);
-//		fd.setLocationRelativeTo(gui.getFrame());
-//		fd.setSelectedFont(UiConfig.getEditorFont());
-//		fd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-//		fd.setVisible(true);
-//
-//		if (!fd.isCancelSelected()) {
-//			UiConfig.setEditorFont(fd.getSelectedFont());
-//			UiConfig.save();
-//		}
 		FontDialog.display(gui.getFrame());
 	}
 
@@ -367,22 +386,25 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui.getFrame());
+		ConnectToServerDialog.Result result = ConnectToServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createClient(result.getUsername(), result.getAddress().address, result.getAddress().port, result.getPassword());
-			NetConfig.setUsername(result.getUsername());
-			NetConfig.setRemoteAddress(result.getAddressStr());
-			NetConfig.setPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createClient(result.username(), result.address().address, result.address().port, result.password());
+			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.CONNECTED_TO_SERVER, result.addressStr()));
+			}
+			NetConfig.setUsername(result.username());
+			NetConfig.setRemoteAddress(result.addressStr());
+			NetConfig.setPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
-		Arrays.fill(result.getPassword(), (char) 0);
+		Arrays.fill(result.password(), (char) 0);
 	}
 
 	public void onStartServerClicked() {
@@ -390,15 +412,18 @@ public class MenuBar {
 			this.gui.getController().disconnectIfConnected(null);
 			return;
 		}
-		CreateServerDialog.Result result = CreateServerDialog.show(this.gui.getFrame());
+		CreateServerDialog.Result result = CreateServerDialog.show(this.gui);
 		if (result == null) {
 			return;
 		}
 		this.gui.getController().disconnectIfConnected(null);
 		try {
-			this.gui.getController().createServer(result.getPort(), result.getPassword());
-			NetConfig.setServerPort(result.getPort());
-			NetConfig.setServerPassword(String.valueOf(result.getPassword()));
+			this.gui.getController().createServer(result.port(), result.password());
+			if (UiConfig.getServerNotificationLevel() != NotificationManager.ServerNotificationLevel.NONE) {
+				this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.SERVER_STARTED, result.port()));
+			}
+			NetConfig.setServerPort(result.port());
+			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
@@ -425,6 +450,70 @@ public class MenuBar {
 				openMenu.add(item);
 			}
 		}
+	}
+
+	public void reloadOpenRecentMenu(Gui gui) {
+		this.openRecentMenu.removeAll();
+		List<Pair<Path, Path>> recentFilePairs = UiConfig.getRecentFilePairs();
+
+		// find the longest common prefix among all mappings files
+		// this is to clear the "/home/user/wherever-you-store-your-mappings-projects/" part of the path and only show relevant information
+		String prefix = recentFilePairs.size() == 1 ? "" : null;
+
+		if (prefix == null) {
+			for (Pair<Path, Path> recent : recentFilePairs) {
+				for (Pair<Path, Path> other : recentFilePairs) {
+					if (recent.equals(other)) {
+						continue;
+					}
+
+					String commonPrefix = findCommonPrefix(recent.b().toString(), other.b().toString());
+
+					if (commonPrefix != null && (prefix == null || (commonPrefix.length() > prefix.length() && verifyCommonPrefix(commonPrefix, recentFilePairs)))) {
+						prefix = commonPrefix;
+					}
+				}
+			}
+		}
+
+		for (Pair<Path, Path> recent : recentFilePairs) {
+			String jarName = recent.a().getFileName().toString();
+
+			// if there's no common prefix, just show the last directory in the tree
+			String mappingsName;
+			if (prefix != null && !prefix.isBlank()) {
+				mappingsName = recent.b().toString().split(prefix)[1];
+			} else {
+				mappingsName = recent.b().toString().substring(recent.b().toString().lastIndexOf("/"));
+			}
+
+			JMenuItem item = new JMenuItem(jarName + " -> " + mappingsName);
+			item.addActionListener(event -> gui.getController().openJar(recent.a()).whenComplete((v, t) -> gui.getController().openMappings(recent.b())));
+			this.openRecentMenu.add(item);
+		}
+	}
+
+	private static boolean verifyCommonPrefix(String prefix, List<Pair<Path, Path>> filePairs) {
+		for (Pair<Path, Path> pair : filePairs) {
+			if (!pair.b().toString().startsWith(prefix)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static String findCommonPrefix(String a, String b) {
+		String[] splitA = a.split("/");
+		String[] splitB = b.split("/");
+
+		for (int i = 0; i < splitA.length; i++) {
+			if (!splitA[i].equals(splitB[i])) {
+				return String.join("/", Arrays.copyOfRange(splitA, 0, i));
+			}
+		}
+
+		return null;
 	}
 
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
@@ -517,14 +606,14 @@ public class MenuBar {
 					scaleMenu.add(menuItem);
 					return new Pair<>(realScaleFactor, menuItem);
 				})
-				.collect(Collectors.toMap(x -> x.a, x -> x.b));
+				.collect(Collectors.toMap(Pair::a, Pair::b));
 
 		JRadioButtonMenuItem currentScaleButton = scaleButtons.get(UiConfig.getScaleFactor());
 		if (currentScaleButton != null) {
 			currentScaleButton.setSelected(true);
 		}
 
-		ScaleUtil.addListener((newScale, _oldScale) -> {
+		ScaleUtil.addListener((newScale, oldScale) -> {
 			JRadioButtonMenuItem mi = scaleButtons.get(newScale);
 			if (mi != null) {
 				mi.setSelected(true);
@@ -534,4 +623,20 @@ public class MenuBar {
 		});
 	}
 
+	private static void prepareNotificationsMenu(JMenu notificationsMenu) {
+		ButtonGroup notificationsGroup = new ButtonGroup();
+
+		for (NotificationManager.ServerNotificationLevel level : NotificationManager.ServerNotificationLevel.values()) {
+			JRadioButtonMenuItem notificationsButton = new JRadioButtonMenuItem(level.getText());
+			notificationsGroup.add(notificationsButton);
+
+			if (level.equals(UiConfig.getServerNotificationLevel())) {
+				notificationsButton.setSelected(true);
+			}
+
+			notificationsButton.addActionListener(event -> UiConfig.setServerNotificationLevel(level));
+
+			notificationsMenu.add(notificationsButton);
+		}
+	}
 }

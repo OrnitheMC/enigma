@@ -13,7 +13,6 @@ package cuchaz.enigma.gui;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
@@ -22,19 +21,19 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.net.URL;
 
-import com.google.common.io.MoreFiles;
-import cuchaz.enigma.gui.util.GuiUtil;
-
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.docker.AllClassesDocker;
+import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.*;
 
 import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
-import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
 
 import javax.imageio.ImageIO;
 
@@ -98,11 +97,11 @@ public class Main {
 						case "no-edit-parameters" -> editables.remove(EditableType.PARAMETER);
 						case "edit-locals" -> {
 							editables.add(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--edit-locals has no effect as local variables are currently not editable");
 						}
 						case "no-edit-locals" -> {
 							editables.remove(EditableType.LOCAL_VARIABLE);
-							System.err.println("warning: --no-edit-locals has no effect as local variables are currently not editable");
+							Logger.warn("--no-edit-locals has no effect as local variables are currently not editable");
 						}
 						case "edit-javadocs" -> editables.add(EditableType.JAVADOC);
 						case "no-edit-javadocs" -> editables.remove(EditableType.JAVADOC);
@@ -130,7 +129,7 @@ public class Main {
 				// install a global exception handler to the event thread
 				CrashDialog.init(gui.getFrame());
 				Thread.setDefaultUncaughtExceptionHandler((thread, t) -> {
-					t.printStackTrace(System.err);
+					Logger.error(t, "Uncaught exception in thread {}", thread);
 					if (!ExceptionIgnorer.shouldIgnore(t)) {
 						CrashDialog.show(t);
 					}
@@ -138,7 +137,7 @@ public class Main {
 			}
 
 			if (options.has("single-class-tree")) {
-				System.out.println("warning: --single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
+				Logger.warn("--single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
 				gui.openDocker(AllClassesDocker.class);
 			}
 
@@ -148,21 +147,27 @@ public class Main {
 						.whenComplete((v, t) -> {
 							if (options.has(mappings)) {
 								Path mappingsPath = options.valueOf(mappings);
-								if (Files.isDirectory(mappingsPath)) {
-									controller.openMappings(MappingFormat.ENIGMA_DIRECTORY, mappingsPath);
-								} else if ("zip".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsPath))) {
-									controller.openMappings(MappingFormat.ENIGMA_ZIP, mappingsPath);
-								} else if ("tiny".equalsIgnoreCase(MoreFiles.getFileExtension(mappingsPath))) {
-									controller.openMappings(MappingFormat.TINY_V2, mappingsPath);
-								} else {
-									controller.openMappings(MappingFormat.ENIGMA_FILE, mappingsPath);
+
+								gui.getController().openMappings(mappingsPath);
+								gui.getNotificationManager().notify(ParameterizedMessage.openedProject(jarPath.toString(), mappingsPath.toString()));
+							} else {
+								// search for mappings that are associated with the jar
+								for (var pair : UiConfig.getRecentFilePairs()) {
+									if (pair.a().equals(jarPath)) {
+										gui.getNotificationManager().notify(ParameterizedMessage.openedProject(pair.a().toString(), pair.b().toString()));
+										gui.getController().openMappings(pair.b());
+										break;
+									}
 								}
+
+								gui.getNotificationManager().notify(new ParameterizedMessage(Message.OPENED_JAR, jarPath.toString().substring(jarPath.toString().lastIndexOf("/"))));
 							}
 						});
+			} else {
+				gui.openMostRecentFiles();
 			}
 		} catch (OptionException e) {
-			System.out.println("Invalid arguments: " + e.getMessage());
-			System.out.println();
+			Logger.error("Invalid arguments: {}\n", e.getMessage());
 			parser.printHelpOn(System.out);
 		}
 	}

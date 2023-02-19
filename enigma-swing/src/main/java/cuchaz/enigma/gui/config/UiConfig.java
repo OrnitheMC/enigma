@@ -1,17 +1,24 @@
 package cuchaz.enigma.gui.config;
 
 import java.awt.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
 import cuchaz.enigma.config.ConfigContainer;
 import cuchaz.enigma.config.ConfigSection;
+import cuchaz.enigma.gui.NotificationManager;
 import cuchaz.enigma.gui.docker.Dock;
 import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
+import org.tinylog.Logger;
+import cuchaz.enigma.utils.Pair;
 
 public final class UiConfig {
 	// sections
@@ -75,6 +82,11 @@ public final class UiConfig {
 	public static final String DEBUG_TOKEN_OUTLINE = "Debug Token Outline";
 	public static final String DEBUG_TOKEN_OUTLINE_ALPHA = "Debug Token Outline Alpha";
 	public static final String DOCK_HIGHLIGHT = "Dock Highlight";
+	public static final String SERVER_NOTIFICATION_LEVEL = "Server Notification Level";
+	public static final String RECENT_FILES = "Recent Files";
+	public static final String MAX_RECENT_FILES = "Max Recent Files";
+
+	private static final String PAIR_SEPARATOR = ":";
 
 	private UiConfig() {
 	}
@@ -137,7 +149,7 @@ public final class UiConfig {
 			if (docker != null) {
 				Docker.Location location = Dock.Util.findLocation(docker);
 				if (location != null) {
-					dockerData[i] = (docker.getId() + ":" + location.verticalLocation());
+					dockerData[i] = (docker.getId() + PAIR_SEPARATOR + location.verticalLocation());
 				}
 			}
 		}
@@ -156,14 +168,14 @@ public final class UiConfig {
 
 		for (String dockInfo : hostedDockers.get()) {
 			if (!dockInfo.isBlank()) {
-				String[] split = dockInfo.split(":");
+				String[] split = dockInfo.split(PAIR_SEPARATOR);
 				try {
 					Docker.VerticalLocation location = Docker.VerticalLocation.valueOf(split[1]);
 					Docker docker = Docker.getDocker(split[0]);
 
 					dockers.put(docker, location);
 				} catch (Exception e) {
-					System.err.println("failed to read docker state for " + dockInfo + ", ignoring! (" + e.getMessage() + ")");
+					Logger.error("failed to read docker state for {}, ignoring! ({})", dockInfo, e.getMessage());
 				}
 			}
 		}
@@ -195,6 +207,77 @@ public final class UiConfig {
 		return swing.data().section(GENERAL).setIfAbsentBool(SAVED_WITH_LEFT_OPEN, false);
 	}
 
+	public static void setMaxRecentFiles(int max) {
+		ui.data().setInt(MAX_RECENT_FILES, max);
+	}
+
+	public static int getMaxRecentFiles() {
+		return ui.data().setIfAbsentInt(MAX_RECENT_FILES, 10);
+	}
+
+	/**
+	 * Adds a new file pair first in the recent files list, limiting the new list's size to {@link #MAX_RECENT_FILES}. If the pair is already in the list, moves it to the top.
+	 * @param jar a path to the jar being mapped
+	 * @param mappings a path to the mappings save location
+	 */
+	public static void addRecentFilePair(Path jar, Path mappings) {
+		var pairs = getRecentFilePairs();
+		var pair = new Pair<>(jar, mappings);
+
+		pairs.remove(pair);
+		pairs.add(0, pair);
+
+		ui.data().setArray(RECENT_FILES, pairs.stream().limit(getMaxRecentFiles()).map(p -> p.a().toString() + PAIR_SEPARATOR + p.b().toString()).toArray(String[]::new));
+	}
+
+	/**
+	 * Returns the most recently accessed project.
+	 * @return A pair containing the jar path as its left element and the mappings path as its right element.
+	 */
+	public static Optional<Pair<Path, Path>> getMostRecentFilePair() {
+		var recentFilePairs = getRecentFilePairs();
+		if (recentFilePairs.isEmpty()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(recentFilePairs.get(0));
+	}
+
+	/**
+	 * Returns all recently accessed projects, up to a limit of {@link #MAX_RECENT_FILES}.
+	 * @return a list of pairs containing the jar path as their left element and the mappings path as their right element.
+	 */
+	public static List<Pair<Path, Path>> getRecentFilePairs() {
+		List<Pair<Path, Path>> pairs = new ArrayList<>();
+
+		String[] pairsArray = ui.data().getArray(RECENT_FILES).orElse(new String[0]);
+
+		for (String filePair : pairsArray) {
+			if (!filePair.isBlank()) {
+				var pairOptional = parseFilePair(filePair);
+
+				if (pairOptional.isPresent()) {
+					pairs.add(pairOptional.get());
+				} else {
+					Logger.error("failed to read recent file state for {}, ignoring!", filePair);
+				}
+			}
+		}
+
+		return pairs;
+	}
+
+	private static Optional<Pair<Path, Path>> parseFilePair(String pair) {
+		String[] split = pair.split(PAIR_SEPARATOR);
+		if (split.length != 2) {
+			return Optional.empty();
+		}
+
+		String jar = split[0];
+		String mappings = split[1];
+		return Optional.of(new Pair<>(Paths.get(jar), Paths.get(mappings)));
+	}
+
 	public static LookAndFeel getLookAndFeel() {
 		return swing.data().section(THEMES).setIfAbsentEnum(LookAndFeel::valueOf, CURRENT, LookAndFeel.NONE);
 	}
@@ -213,6 +296,14 @@ public final class UiConfig {
 
 	public static void setDecompiler(Decompiler d) {
 		ui.data().section(DECOMPILER).setEnum(CURRENT, d);
+	}
+
+	public static NotificationManager.ServerNotificationLevel getServerNotificationLevel() {
+		return swing.data().section(GENERAL).setIfAbsentEnum(NotificationManager.ServerNotificationLevel::valueOf, SERVER_NOTIFICATION_LEVEL, NotificationManager.ServerNotificationLevel.FULL);
+	}
+
+	public static void setServerNotificationLevel(NotificationManager.ServerNotificationLevel level) {
+		swing.data().section(GENERAL).setEnum(SERVER_NOTIFICATION_LEVEL, level);
 	}
 
 	private static Color fromComponents(int rgb, double alpha) {
