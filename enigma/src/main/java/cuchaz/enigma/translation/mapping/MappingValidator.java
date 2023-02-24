@@ -56,7 +56,7 @@ public class MappingValidator {
 					.map(this.deobfuscator::translate)
 					.toList();
 
-			if (!this.isUnique(translatedEntry, translatedSiblings, name)) {
+			if (!this.isUnique(entry, translatedSiblings, name)) {
 				Entry<?> parent = translatedEntry.getParent();
 
 				if (parent != null) {
