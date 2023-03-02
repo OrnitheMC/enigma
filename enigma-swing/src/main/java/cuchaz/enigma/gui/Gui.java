@@ -246,8 +246,8 @@ public class Gui {
 	public void openDocker(Class<? extends Docker> clazz) {
 		Docker newDocker = Docker.getDocker(clazz);
 
-		Dock dock = (newDocker.getPreferredLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
-		dock.host(newDocker, newDocker.getPreferredLocation().verticalLocation());
+		Dock dock = (newDocker.getButtonLocation().side() == Docker.Side.LEFT ? this.leftDock : this.rightDock);
+		dock.host(newDocker, newDocker.getButtonLocation().verticalLocation());
 	}
 
 	public NotificationManager getNotificationManager() {
@@ -580,7 +580,6 @@ public class Gui {
 
 		ClassSelector deobfuscatedClassSelector = Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector();
 		ClassSelector obfuscatedClassSelector = Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector();
-		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
 
 		List<ClassSelector.StateEntry> deobfuscatedPanelExpansionState = deobfuscatedClassSelector.getExpansionState();
 		List<ClassSelector.StateEntry> obfuscatedPanelExpansionState = obfuscatedClassSelector.getExpansionState();
@@ -603,12 +602,21 @@ public class Gui {
 			deobfuscatedClassSelector.reload();
 		}
 
-		allClassesClassSelector.removeEntry(classEntry);
-		allClassesClassSelector.moveClassIn(classEntry);
-		allClassesClassSelector.reload();
+		this.reloadClassEntry(classEntry);
 
 		deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
 		obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+	}
+
+	public void reloadClassEntry(ClassEntry classEntry) {
+		Docker.getDocker(DeobfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+		Docker.getDocker(ObfuscatedClassesDocker.class).getClassSelector().reloadEntry(classEntry);
+
+		ClassSelector allClassesClassSelector = Docker.getDocker(AllClassesDocker.class).getClassSelector();
+		List<ClassSelector.StateEntry> expansionState = allClassesClassSelector.getExpansionState();
+		allClassesClassSelector.reloadEntry(classEntry);
+		allClassesClassSelector.reload();
+		allClassesClassSelector.restoreExpansionState(expansionState);
 	}
 
 	public SearchDialog getSearchDialog() {

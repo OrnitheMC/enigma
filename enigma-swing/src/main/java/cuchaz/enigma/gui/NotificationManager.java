@@ -10,6 +10,7 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
@@ -27,6 +28,12 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * A notifier that displays notifications in an {@link Gui}, and collects them so that their history can be stored in the {@link NotificationsDocker}.
+ * <p>Can be used for notifications that go beyond the scale of {@link ValidationContext} errors, such as project opening notifications.
+ * Notifications are held visible for a certain amount of time, and then removed from the {@link Gui}.
+ * They can also be manually dismissed by the user.</p>
+ */
 public class NotificationManager implements ValidationContext.Notifier {
 	public static final int REMOVE_CHECK_INTERVAL_MILLISECONDS = 5;
 	public static final int TIMEOUT_MILLISECONDS = 10000;
@@ -91,7 +98,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 	}
 
 	public void notify(ParameterizedMessage message) {
-		Notification notificationPanel = new Notification(this.gui, message.type(), message.getText(), message.getLongText(), true);
+		Notification notificationPanel = new Notification(this.gui, message.getType(), message.getText(), message.getLongText(), true);
 
 		JPanel glass = (JPanel) this.gui.getFrame().getGlassPane();
 		this.glassPane = glass;
@@ -115,8 +122,22 @@ public class NotificationManager implements ValidationContext.Notifier {
 		notificationPanel.setVisible(true);
 	}
 
+	@Override
+	public boolean verifyWarning(ParameterizedMessage message) {
+		String text = message.getText() + (message.getLongText().length() > 0 ? "\n\n" + message.getLongText() : "");
+		return JOptionPane.showConfirmDialog(this.gui.getFrame(), text, translateType(message.getType()), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
+	}
+
+	/**
+	 * Gets all notifications that are currently active, meaning visible in the {@link Gui}.
+	 * @return the active notifications, with their remaining time in milliseconds
+	 */
 	public Map<Notification, Integer> getActiveNotifications() {
 		return this.activeNotifications;
+	}
+
+	private static String translateType(Message.Type type) {
+		return I18n.translate("notification.type." + type.name().toLowerCase());
 	}
 
 	public enum ServerNotificationLevel {
@@ -129,6 +150,10 @@ public class NotificationManager implements ValidationContext.Notifier {
 		}
 	}
 
+	/**
+	 * Represents a notification that can be displayed in the {@link Gui}.
+	 * Each notification has a unique id, so that the same message can be displayed multiple times without issue.
+	 */
 	public static class Notification extends JPanel {
 		private final int id;
 		private final Message.Type type;
@@ -195,7 +220,7 @@ public class NotificationManager implements ValidationContext.Notifier {
 			topBar.add(dismissButton, BorderLayout.EAST);
 
 			String whitespace = " ".repeat(title.length() > message.length() ? (int) ((title.length() - message.length()) * 2f) : 0);
-			topBar.add(new JLabel(I18n.translate("notification.type." + type.name().toLowerCase()) + "!" + whitespace), BorderLayout.WEST);
+			topBar.add(new JLabel(translateType(type) + "!" + whitespace), BorderLayout.WEST);
 			topBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
 
 			this.add(messagePanel, BorderLayout.CENTER);

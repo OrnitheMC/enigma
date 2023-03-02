@@ -3,6 +3,8 @@ package cuchaz.enigma.translation.mapping;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
@@ -25,22 +27,24 @@ public class MappingValidator {
 		this.index = index;
 	}
 
-	public boolean validateRename(ValidationContext vc, Entry<?> entry, String name) {
-		boolean error = false;
 
-		for (Entry<?> equivalentEntry : index.getEntryResolver().resolveEquivalentEntries(entry)) {
+	public void validateRename(ValidationContext vc, Entry<?> entry, String name) {
+		boolean uniquenessIssue = false;
+
+		for (Entry<?> equivalentEntry : this.index.getEntryResolver().resolveEquivalentEntries(entry)) {
 			equivalentEntry.validateName(vc, name);
-			error |= this.validateUnique(vc, equivalentEntry, name);
+			if (!uniquenessIssue) {
+				uniquenessIssue = this.validateUnique(vc, equivalentEntry, name);
+			}
 		}
-
-		return error;
 	}
 
+	/**
+	 * @return whether an error was raised
+	 */
 	private boolean validateUnique(ValidationContext vc, Entry<?> entry, String name) {
 		ClassEntry containingClass = entry.getContainingClass();
 		Collection<ClassEntry> relatedClasses = this.getRelatedClasses(containingClass);
-
-		boolean error = false;
 
 		for (ClassEntry relatedClass : relatedClasses) {
 			if (this.isStatic(entry) && relatedClass != containingClass) {
@@ -51,25 +55,31 @@ public class MappingValidator {
 			Entry<?> relatedEntry = entry.replaceAncestor(containingClass, relatedClass);
 			Entry<?> translatedEntry = this.deobfuscator.translate(relatedEntry);
 
-			List<? extends Entry<?>> translatedSiblings = this.obfToDeobf.getSiblings(relatedEntry).stream()
-					.filter(e -> !e.equals(entry)) // If the entry is a class, this could contain itself
+			Stream<Entry<?>> filteredRelatedEntries = this.obfToDeobf.getSiblings(relatedEntry).stream()
+					.filter(e -> !e.equals(entry)); // if the entry is a class, this could contain itself
+
+			var siblings = filteredRelatedEntries.collect(Collectors.toList());
+			siblings.addAll(
+					siblings.stream()
 					.map(this.deobfuscator::translate)
-					.toList();
+					.toList()
+			);
 
-			if (!this.isUnique(entry, translatedSiblings, name)) {
-				Entry<?> parent = translatedEntry.getParent();
-
-				if (parent != null) {
-					vc.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
-				} else {
-					vc.raise(Message.NONUNIQUE_NAME, name);
+			if (!this.isUnique(entry, siblings, name)) {
+				if (translatedEntry != null) {
+					Entry<?> parent = translatedEntry.getParent();
+					if (parent != null) {
+						vc.raise(Message.NONUNIQUE_NAME_CLASS, name, parent);
+						return true;
+					}
 				}
 
-				error = true;
+				vc.raise(Message.NONUNIQUE_NAME, name);
+				return true;
 			}
 		}
 
-		return error;
+		return false;
 	}
 
 	private Collection<ClassEntry> getRelatedClasses(ClassEntry classEntry) {

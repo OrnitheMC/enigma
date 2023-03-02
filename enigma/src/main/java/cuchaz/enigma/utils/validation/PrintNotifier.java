@@ -4,12 +4,20 @@ import org.tinylog.Logger;
 
 import java.util.Arrays;
 
+/**
+ * A simple notifier that prints messages to the console.
+ */
 public class PrintNotifier implements ValidationContext.Notifier {
 	public static final PrintNotifier INSTANCE = new PrintNotifier();
 
 	@Override
 	public void notify(ParameterizedMessage message) {
 		formatMessage(message);
+	}
+
+	@Override
+	public boolean verifyWarning(ParameterizedMessage message) {
+		return true;
 	}
 
 	public static void formatMessage(ParameterizedMessage message) {

@@ -22,8 +22,6 @@ import java.util.Set;
 import java.net.URL;
 
 import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.docker.AllClassesDocker;
-import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.*;
@@ -32,6 +30,7 @@ import cuchaz.enigma.EnigmaProfile;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
+import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 import org.tinylog.Logger;
 
@@ -134,11 +133,6 @@ public class Main {
 						CrashDialog.show(t);
 					}
 				});
-			}
-
-			if (options.has("single-class-tree")) {
-				Logger.warn("--single-class-tree is deprecated and will be removed in the next minor version! simply use the \"all classes\" docker instead.");
-				gui.openDocker(AllClassesDocker.class);
 			}
 
 			if (options.has(jar)) {

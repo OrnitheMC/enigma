@@ -157,7 +157,6 @@ public class TestMappingValidator {
 		assertThat(vc.getMessages().size(), is(messages.length));
 		for (int i = 0; i < messages.length; i++) {
 			ParameterizedMessage msg = vc.getMessages().get(i);
-			assertThat(msg.type(), is(messages[i].getType()));
 			assertThat(msg.message(), is(messages[i]));
 		}
 	}
@@ -167,6 +166,15 @@ public class TestMappingValidator {
 	}
 
 	private static ValidationContext.Notifier notifier() {
-		return m -> {};
+		return new ValidationContext.Notifier() {
+			@Override
+			public void notify(ParameterizedMessage message) {
+			}
+
+			@Override
+			public boolean verifyWarning(ParameterizedMessage message) {
+				return true;
+			}
+		};
 	}
 }

@@ -1,36 +1,7 @@
 package cuchaz.enigma;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
-import cuchaz.enigma.api.service.ObfuscationTestService;
-import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.utils.Pair;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.ClassNode;
-
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.index.EnclosingMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
@@ -54,7 +25,28 @@ import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.Pair;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
 import org.tinylog.Logger;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EnigmaProject {
 	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
@@ -182,8 +174,6 @@ public class EnigmaProject {
 	}
 
 	public boolean isObfuscated(Entry<?> entry) {
-		String name = entry.getName();
-
 		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
 		if (!obfuscationTestServices.isEmpty()) {
 			for (ObfuscationTestService service : obfuscationTestServices) {
@@ -202,8 +192,8 @@ public class EnigmaProject {
 			}
 		}
 
-		String mappedName = this.mapper.deobfuscate(entry).getName();
-		return mappedName == null || mappedName.isEmpty() || mappedName.equals(name);
+		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
+		return mapping.targetName() == null;
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
