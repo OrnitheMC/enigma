@@ -475,6 +475,10 @@ public class MenuBar {
 		}
 
 		for (Pair<Path, Path> recent : recentFilePairs) {
+			if (!Files.exists(recent.a()) || !Files.exists(recent.b())) {
+				continue;
+			}
+
 			String jarName = recent.a().getFileName().toString();
 
 			// if there's no common prefix, just show the last directory in the tree

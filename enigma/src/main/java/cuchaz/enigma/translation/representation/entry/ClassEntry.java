@@ -90,6 +90,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
+	public String getSourceRemapName() {
+		return this.getSimpleName();
+	}
+
+	@Override
 	public String getContextualName() {
 		if (this.isInnerClass()) {
 			return this.parent.getSimpleName() + "$" + this.name;
@@ -261,15 +266,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 			return name.substring(innerClassPos + 1);
 		}
 		return name;
-	}
-
-	@Override
-	public String getSourceRemapName() {
-		ClassEntry outerClass = getOuterClass();
-		if (outerClass != null && localPrefix.isBlank()) {
-			return outerClass.getSourceRemapName() + "." + name;
-		}
-		return this.getSimpleName();
 	}
 
 	@Override
