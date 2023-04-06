@@ -1,22 +1,15 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui.highlight;
-
-import java.awt.*;
 
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 
 import cuchaz.enigma.gui.config.UiConfig;
+
+import java.awt.BasicStroke;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 
 public class SelectionHighlightPainter implements Highlighter.HighlightPainter {
 	public static final SelectionHighlightPainter INSTANCE = new SelectionHighlightPainter();

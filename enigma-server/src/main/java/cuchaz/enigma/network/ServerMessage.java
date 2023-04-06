@@ -50,11 +50,12 @@ public abstract class ServerMessage {
 		if (typeId < 0 || typeId >= Type.values().length) {
 			throw new IOException(String.format("Invalid message searchType ID %d", typeId));
 		}
-		Type searchType = Type.values()[typeId];
-		String user = input.readUTF();
-		switch (searchType) {
+
+		Type type = Type.values()[typeId];
+		String user = PacketHelper.readString(input);
+		switch (type) {
 			case CHAT:
-				String message = input.readUTF();
+				String message = PacketHelper.readString(input);
 				return chat(user, message);
 			case CONNECT:
 				return connect(user);
@@ -71,7 +72,7 @@ public abstract class ServerMessage {
 				return removeMapping(user, entry);
 			case RENAME:
 				entry = PacketHelper.readEntry(input);
-				String newName = input.readUTF();
+				String newName = PacketHelper.readString(input);
 				return rename(user, entry, newName);
 			default:
 				throw new IllegalStateException("unreachable");

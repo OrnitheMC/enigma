@@ -1,14 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui;
 
 import java.awt.Desktop;
@@ -46,7 +35,12 @@ import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.stats.StatsGenerator;
 import cuchaz.enigma.gui.stats.StatsMember;
 import cuchaz.enigma.gui.util.History;
-import cuchaz.enigma.network.*;
+import cuchaz.enigma.network.ClientPacketHandler;
+import cuchaz.enigma.network.EnigmaClient;
+import cuchaz.enigma.network.EnigmaServer;
+import cuchaz.enigma.network.IntegratedEnigmaServer;
+import cuchaz.enigma.network.ServerMessage;
+import cuchaz.enigma.network.ServerPacketHandler;
 import cuchaz.enigma.network.packet.EntryChangeC2SPacket;
 import cuchaz.enigma.network.packet.LoginC2SPacket;
 import cuchaz.enigma.network.packet.Packet;
@@ -56,7 +50,12 @@ import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
-import cuchaz.enigma.translation.mapping.*;
+import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.mapping.EntryUtil;
+import cuchaz.enigma.translation.mapping.MappingDelta;
+import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
@@ -302,7 +301,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	/**
-	 * Navigates to the declaration with respect to navigation history
+	 * Navigates to the declaration with respect to navigation history.
 	 *
 	 * @param entry the entry whose declaration will be navigated to
 	 */
@@ -314,7 +313,7 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	/**
-	 * Navigates to the reference with respect to navigation history
+	 * Navigates to the reference with respect to navigation history.
 	 *
 	 * @param reference the reference
 	 */
@@ -382,7 +381,9 @@ public class GuiController implements ClientPacketHandler {
 	}
 
 	public void refreshClasses() {
-		if (this.project == null) return;
+		if (this.project == null) {
+			return;
+		}
 
 		List<ClassEntry> obfClasses = new ArrayList<>();
 		List<ClassEntry> deobfClasses = new ArrayList<>();
@@ -586,12 +587,14 @@ public class GuiController implements ClientPacketHandler {
 
 		if (this.client != null) {
 			this.client.disconnect();
+			this.client = null;
 		}
+
 		if (this.server != null) {
 			this.server.stop();
+			this.server = null;
 		}
-		this.client = null;
-		this.server = null;
+
 		SwingUtilities.invokeLater(() -> {
 			if (reason != null) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), I18n.translate(reason), I18n.translate("disconnect.disconnected"), JOptionPane.INFORMATION_MESSAGE);

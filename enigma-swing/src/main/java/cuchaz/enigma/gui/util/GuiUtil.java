@@ -164,19 +164,22 @@ public class GuiUtil {
 	}
 
 	public static Icon getDeobfuscationIcon(StatsResult stats) {
-		if (stats.getPercentage() == 100d) {
-			return DEOBFUSCATED_ICON;
-		} else if (stats.getPercentage() > 0) {
-			return PARTIALLY_DEOBFUSCATED_ICON;
-		} else {
-			return OBFUSCATED_ICON;
+		if (stats != null) {
+			if (stats.getPercentage() == 100d) {
+				return DEOBFUSCATED_ICON;
+			} else if (stats.getPercentage() > 0) {
+				return PARTIALLY_DEOBFUSCATED_ICON;
+			}
 		}
+
+		return OBFUSCATED_ICON;
 	}
 
 	public static Icon getMethodIcon(MethodEntry entry) {
 		if (entry.isConstructor()) {
 			return CONSTRUCTOR_ICON;
 		}
+
 		return METHOD_ICON;
 	}
 

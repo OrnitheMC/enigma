@@ -1,21 +1,19 @@
-/*******************************************************************************
- * Copyright (c) 2015 Jeff Martin.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public
- * License v3.0 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- * <p>
- * Contributors:
- * Jeff Martin - initial API and implementation
- ******************************************************************************/
-
 package cuchaz.enigma.gui.dialog;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
 import javax.swing.text.html.HTML;
 
 import com.google.common.base.Strings;
@@ -111,6 +109,7 @@ public class JavadocDialog {
 					} else {
 						tagText = tag.getText() + " " + this.text.getSelectedText();
 					}
+
 					this.text.replaceSelection(tagText);
 				} else {
 					this.text.insert(tagText, this.text.getCaretPosition());
@@ -119,6 +118,7 @@ public class JavadocDialog {
 				if (tag.isInline()) {
 					this.text.setCaretPosition(this.text.getCaretPosition() - 1);
 				}
+
 				this.text.grabFocus();
 			});
 			tagsMenu.add(tagButton);
@@ -130,6 +130,7 @@ public class JavadocDialog {
 		for (HTML.Tag htmlTag : HTML.getAllTags()) {
 			htmlList.addItem(htmlTag.toString());
 		}
+
 		htmlList.addActionListener(action -> {
 			String tagText = "<" + htmlList.getSelectedItem().toString() + ">";
 			this.text.insert(tagText, this.text.getCaretPosition());
