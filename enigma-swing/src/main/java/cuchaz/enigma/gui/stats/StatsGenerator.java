@@ -1,10 +1,5 @@
 package cuchaz.enigma.gui.stats;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
@@ -20,6 +15,11 @@ import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class StatsGenerator {
 	private final EnigmaProject project;
@@ -79,11 +79,6 @@ public class StatsGenerator {
 			for (MethodEntry method : this.entryIndex.getMethods()) {
 				progress.step(numDone++, I18n.translate("searchType.methods"));
 
-				// we don't want constructors or otherwise non-mappable things to show as a mapped method!
-				if (!this.project.isRenamable(method)) {
-					continue;
-				}
-
 				MethodEntry root = this.entryResolver
 						.resolveEntry(method, ResolutionStrategy.RESOLVE_ROOT)
 						.stream()
@@ -93,7 +88,7 @@ public class StatsGenerator {
 				ClassEntry clazz = root.getParent();
 
 				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, forClassTree)) {
-					if (includedMembers.contains(StatsMember.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+					if (includedMembers.contains(StatsMember.METHODS) && this.project.isRenamable(method) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
 						totalMappable += this.update(counts, method, forClassTree);
 					}
 

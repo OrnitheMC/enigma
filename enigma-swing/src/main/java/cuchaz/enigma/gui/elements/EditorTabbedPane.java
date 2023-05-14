@@ -1,16 +1,6 @@
 package cuchaz.enigma.gui.elements;
 
-import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.util.Iterator;
-
-import javax.annotation.Nullable;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
 import com.google.common.collect.HashBiMap;
-
 import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.classhandle.ClassHandle;
 import cuchaz.enigma.gui.Gui;
@@ -21,6 +11,14 @@ import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+
+import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import javax.annotation.Nullable;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 public class EditorTabbedPane {
 	private final JTabbedPane openFiles = new JTabbedPane(SwingConstants.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -141,7 +139,7 @@ public class EditorTabbedPane {
 				this.editorTabPopupMenu.show(this.openFiles, e.getX(), e.getY(), EditorPanel.byUi(this.openFiles.getComponentAt(i)));
 			}
 
-			this.gui.showStructure(this.getActiveEditor());
+			this.gui.updateStructure(this.getActiveEditor());
 		}
 	}
 

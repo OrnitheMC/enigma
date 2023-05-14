@@ -1,6 +1,22 @@
 package cuchaz.enigma.gui.dialog;
 
-import java.awt.*;
+import com.google.common.base.Strings;
+import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.gui.GuiController;
+import cuchaz.enigma.gui.config.UiConfig;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
+import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.gui.util.ScaleUtil;
+import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -15,20 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 import javax.swing.text.html.HTML;
-
-import com.google.common.base.Strings;
-
-import cuchaz.enigma.analysis.EntryReference;
-import cuchaz.enigma.gui.GuiController;
-import cuchaz.enigma.gui.config.UiConfig;
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.gui.util.ScaleUtil;
-import cuchaz.enigma.translation.mapping.EntryChange;
-import cuchaz.enigma.translation.mapping.EntryMapping;
-import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.utils.I18n;
-import cuchaz.enigma.utils.validation.ValidationContext;
 
 public class JavadocDialog {
 	private final JDialog ui;

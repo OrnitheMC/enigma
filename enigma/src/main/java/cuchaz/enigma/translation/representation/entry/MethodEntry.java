@@ -1,17 +1,16 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import java.util.Objects;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-
 import com.google.common.base.Preconditions;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
+
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import javax.annotation.Nonnull;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
 	protected final MethodDescriptor descriptor;
@@ -88,6 +87,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 			}
 			return isStatic.test(this) != isStatic.test(methodEntry);
 		}
+
 		return false;
 	}
 

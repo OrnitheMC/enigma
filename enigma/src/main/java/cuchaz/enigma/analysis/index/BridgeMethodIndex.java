@@ -9,7 +9,11 @@ import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BridgeMethodIndex implements JarIndexer {
 	private final EntryIndex entryIndex;
@@ -167,5 +171,10 @@ public class BridgeMethodIndex implements JarIndexer {
 	/** Only "bridge -> original name" entries. **/
 	public Map<MethodEntry, MethodEntry> getBridgeToSpecialized() {
 		return Collections.unmodifiableMap(this.bridgeToSpecialized);
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.bridge_methods";
 	}
 }

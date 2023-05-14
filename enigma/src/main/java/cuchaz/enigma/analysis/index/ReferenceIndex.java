@@ -8,7 +8,12 @@ import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.Lambda;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,6 +36,7 @@ public class ReferenceIndex implements JarIndexer {
 		for (TypeDescriptor typeDescriptor : descriptor.getArgumentDescs()) {
 			this.indexMethodTypeDescriptor(entry, typeDescriptor);
 		}
+
 		this.indexMethodTypeDescriptor(entry, descriptor.getReturnDesc());
 	}
 
@@ -75,8 +81,8 @@ public class ReferenceIndex implements JarIndexer {
 
 	@Override
 	public void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
-		if (lambda.implMethod() instanceof MethodEntry) {
-			this.indexMethodReference(callerEntry, (MethodEntry) lambda.implMethod(), targetType);
+		if (lambda.implMethod() instanceof MethodEntry method) {
+			this.indexMethodReference(callerEntry, method, targetType);
 		} else {
 			this.indexFieldReference(callerEntry, (FieldEntry) lambda.implMethod(), targetType);
 		}
@@ -102,6 +108,7 @@ public class ReferenceIndex implements JarIndexer {
 		for (Map.Entry<K, V> entry : multimap.entries()) {
 			resolved.put(this.remap(index, entry.getKey()), this.remap(index, entry.getValue()));
 		}
+
 		return resolved;
 	}
 
@@ -111,6 +118,7 @@ public class ReferenceIndex implements JarIndexer {
 		for (Map.Entry<E, EntryReference<E, C>> entry : multimap.entries()) {
 			resolved.put(this.remap(index, entry.getKey()), this.remap(index, entry.getValue()));
 		}
+
 		return resolved;
 	}
 
@@ -144,5 +152,10 @@ public class ReferenceIndex implements JarIndexer {
 
 	public Collection<EntryReference<ClassEntry, MethodDefEntry>> getMethodTypeReferencesToClass(ClassEntry entry) {
 		return this.methodTypeReferences.get(entry);
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.process.references";
 	}
 }

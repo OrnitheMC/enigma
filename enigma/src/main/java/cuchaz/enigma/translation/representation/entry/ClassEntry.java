@@ -69,8 +69,8 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (packagePos > 0) {
 			return this.name.substring(packagePos + 1);
 		}
-		return name.substring(localPrefix.length());
 
+		return name.substring(localPrefix.length());
 	}
 
 	@Override
@@ -88,6 +88,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (this.isInnerClass()) {
 			return this.parent.getSimpleName() + "$" + this.name;
 		}
+
 		return this.getSimpleName();
 	}
 
@@ -184,6 +185,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (this.parent == null) {
 			return this;
 		}
+
 		return this.parent.getOutermostClass();
 	}
 
@@ -202,6 +204,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 				break;
 			}
 		}
+
 		return new ClassEntry(buf.toString());
 	}
 
@@ -215,6 +218,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (pos > 0) {
 			return name.substring(0, pos);
 		}
+
 		return null;
 	}
 
@@ -242,6 +246,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (index >= 0) {
 			return new ClassEntry(name.substring(0, index));
 		}
+
 		return null;
 	}
 
@@ -254,6 +259,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (innerClassPos > 0) {
 			return name.substring(innerClassPos + 1);
 		}
+
 		return name;
 	}
 

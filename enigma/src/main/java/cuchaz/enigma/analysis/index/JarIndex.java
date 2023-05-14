@@ -11,10 +11,19 @@ import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.IndexEntryResolver;
 import cuchaz.enigma.translation.representation.Lambda;
-import cuchaz.enigma.translation.representation.entry.*;
+import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class JarIndex implements JarIndexer {
 	private final Set<String> indexedClasses = new HashSet<>();
@@ -30,6 +39,8 @@ public class JarIndex implements JarIndexer {
 
 	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
 	private final ListMultimap<ClassEntry, ParentedEntry<?>> childrenByClass;
+
+	private ProgressListener progress;
 
 	public JarIndex(EntryIndex entryIndex, InheritanceIndex inheritanceIndex, ReferenceIndex referenceIndex, BridgeMethodIndex bridgeMethodIndex, PackageVisibilityIndex packageVisibilityIndex, EnclosingMethodIndex enclosingMethodIndex) {
 		this.entryIndex = entryIndex;
@@ -54,16 +65,19 @@ public class JarIndex implements JarIndexer {
 	}
 
 	public void indexJar(Set<String> classNames, ClassProvider classProvider, ProgressListener progress) {
-		this.indexedClasses.addAll(classNames);
-		progress.init(4, I18n.translate("progress.jar.indexing"));
+		// for use in processIndex
+		this.progress = progress;
 
-		progress.step(1, I18n.translate("progress.jar.indexing.entries"));
+		this.indexedClasses.addAll(classNames);
+		this.progress.init(4, I18n.translate("progress.jar.indexing"));
+
+		this.progress.step(1, I18n.translate("progress.jar.indexing.entries"));
 
 		for (String className : classNames) {
 			classProvider.get(className).accept(new IndexClassVisitor(this, Enigma.ASM_VERSION));
 		}
 
-		progress.step(2, I18n.translate("progress.jar.indexing.references"));
+		this.progress.step(2, I18n.translate("progress.jar.indexing.references"));
 
 		for (String className : classNames) {
 			try {
@@ -73,16 +87,30 @@ public class JarIndex implements JarIndexer {
 			}
 		}
 
-		progress.step(3, I18n.translate("progress.jar.indexing.methods"));
+		this.progress.step(3, I18n.translate("progress.jar.indexing.methods"));
 		this.bridgeMethodIndex.findBridgeMethods();
 
-		progress.step(4, I18n.translate("progress.jar.indexing.process"));
 		this.processIndex(this);
+
+		this.progress = null;
 	}
 
 	@Override
 	public void processIndex(JarIndex index) {
-		this.indexers.forEach(indexer -> indexer.processIndex(index));
+		this.stepProcessingProgress("progress.jar.indexing.process.jar");
+
+		this.indexers.forEach(indexer -> {
+			this.stepProcessingProgress(indexer.getTranslationKey());
+			indexer.processIndex(index);
+		});
+
+		this.stepProcessingProgress("progress.jar.indexing.process.done");
+	}
+
+	private void stepProcessingProgress(String key) {
+		if (this.progress != null) {
+			this.progress.step(4, I18n.translateFormatted("progress.jar.indexing.process", I18n.translate(key)));
+		}
 	}
 
 	@Override
@@ -165,6 +193,11 @@ public class JarIndex implements JarIndexer {
 		}
 
 		this.indexers.forEach(indexer -> indexer.indexEnclosingMethod(classEntry, enclosingMethodData));
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return "progress.jar.indexing.jar";
 	}
 
 	public EntryIndex getEntryIndex() {

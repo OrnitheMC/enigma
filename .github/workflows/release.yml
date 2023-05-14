@@ -8,7 +8,7 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v3
-      - run: ./gradlew build publish --stacktrace
+      - run: ./gradlew checkstyleMain build publish --stacktrace
         env:
           MAVEN_URL: ${{ secrets.NEW_MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.NEW_MAVEN_USERNAME }}

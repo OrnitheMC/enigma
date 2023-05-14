@@ -33,15 +33,10 @@ subprojects {
     }
 
     group = 'net.ornithemc'
-    version = '1.7.3'
+    version = '1.7.4'
 
     var ENV = System.getenv()
     version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
 
     java {
         withSourcesJar()

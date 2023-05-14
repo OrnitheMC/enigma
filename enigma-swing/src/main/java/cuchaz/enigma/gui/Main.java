@@ -1,25 +1,14 @@
 package cuchaz.enigma.gui;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.net.URL;
-
-import cuchaz.enigma.gui.config.keybind.KeyBinds;
-import cuchaz.enigma.utils.validation.Message;
-import cuchaz.enigma.utils.validation.ParameterizedMessage;
-
 import cuchaz.enigma.EnigmaProfile;
+import cuchaz.enigma.gui.config.keybind.KeyBinds;
 import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.CrashDialog;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
+import cuchaz.enigma.utils.validation.Message;
+import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -27,6 +16,15 @@ import joptsimple.OptionSpec;
 import joptsimple.ValueConverter;
 import org.tinylog.Logger;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.imageio.ImageIO;
 
 public class Main {
