@@ -52,7 +52,6 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;

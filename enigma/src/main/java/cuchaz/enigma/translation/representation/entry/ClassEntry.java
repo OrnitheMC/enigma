@@ -1,12 +1,5 @@
 package cuchaz.enigma.translation.representation.entry;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -15,6 +8,12 @@ import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
 	private final String fullName;
@@ -34,18 +33,20 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		if (parent != null) {
 			// local classes have a number prefix
 			int i = 0;
-			while (i < name.length() && Character.isDigit(name.charAt(i))) {
+			while (i < this.name.length() && Character.isDigit(this.name.charAt(i))) {
 				i++;
 			}
+
 			// if entire inner name is a number, this class is anonymous, not local
-			if (i == name.length()) {
+			if (i == this.name.length()) {
 				i = 0;
 			}
-			fullName = parent.getFullName() + "$" + name;
-			localPrefix = name.substring(0, i);
+
+			this.fullName = parent.getFullName() + "$" + this.name;
+			this.localPrefix = this.name.substring(0, i);
 		} else {
-			fullName = name;
-			localPrefix = "";
+			this.fullName = this.name;
+			this.localPrefix = "";
 		}
 
 		if (parent == null && className.indexOf('.') >= 0) {
@@ -70,7 +71,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 			return this.name.substring(packagePos + 1);
 		}
 
-		return name.substring(localPrefix.length());
+		return this.name.substring(this.localPrefix.length());
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getNamePrefix() {
-		return localPrefix;
+		return this.localPrefix;
 	}
 
 	@Override
@@ -143,10 +144,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public void validateName(ValidationContext vc, String name) {
-		if (!name.startsWith(localPrefix)) {
-			vc.raise(Message.MISSING_LOCAL_PREFIX, name, localPrefix);
+		if (!name.startsWith(this.localPrefix)) {
+			vc.raise(Message.MISSING_LOCAL_PREFIX, name, this.localPrefix);
 		}
-		IdentifierValidation.validateClassName(vc, name.substring(localPrefix.length()), this.isInnerClass());
+
+		IdentifierValidation.validateClassName(vc, name.substring(this.localPrefix.length()), this.isInnerClass());
 	}
 
 	@Override

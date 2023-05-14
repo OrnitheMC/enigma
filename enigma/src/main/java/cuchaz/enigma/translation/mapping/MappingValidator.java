@@ -27,7 +27,6 @@ public class MappingValidator {
 		this.index = index;
 	}
 
-
 	public void validateRename(ValidationContext vc, Entry<?> entry, String name) {
 		boolean uniquenessIssue = false;
 

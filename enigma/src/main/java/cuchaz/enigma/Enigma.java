@@ -27,14 +27,13 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 public class Enigma {
-
 	public static final String NAME = "OrnitheMC- Enigma";
 	public static final String VERSION;
 	public static final String QUILTFLOWER_VERSION;
 	public static final String CFR_VERSION;
 	public static final String PROCYON_VERSION;
 	public static final String URL = "https://github.com/OrnitheMC/enigma";
-    public static final int ASM_VERSION = Opcodes.ASM9;
+	public static final int ASM_VERSION = Opcodes.ASM9;
 
 	private final EnigmaProfile profile;
 	private final EnigmaServices services;
@@ -85,7 +84,7 @@ public class Enigma {
 	}
 
 	public boolean mapLocals() {
-		return mapLocals;
+		return this.mapLocals;
 	}
 
 	public void setMapLocals(boolean mapLocals) {

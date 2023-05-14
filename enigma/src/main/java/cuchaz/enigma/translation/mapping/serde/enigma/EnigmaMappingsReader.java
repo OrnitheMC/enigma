@@ -209,9 +209,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			case EnigmaFormat.PARAMETER -> {
 				return parseVariable(parentEntry, tokens, true);
 			}
- 			case EnigmaFormat.LOCAL_VARIABLE -> {
- 				return parseVariable(parentEntry, tokens, false);
- 			}
+			case EnigmaFormat.LOCAL_VARIABLE -> {
+				return parseVariable(parentEntry, tokens, false);
+			}
 			case EnigmaFormat.COMMENT -> {
 				readJavadoc(parent, tokens);
 				return null;

@@ -166,6 +166,7 @@ public class EnigmaProject {
 		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
+
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
 	}
 

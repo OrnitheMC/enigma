@@ -290,7 +290,7 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 
 	protected String writeVariable(LocalVariableEntry entry, @Nonnull EntryMapping mapping) {
 		String type = entry.isArgument() ? EnigmaFormat.PARAMETER : EnigmaFormat.LOCAL_VARIABLE;
-		return type + " "  + entry.getIndex() + ' ' + mapping.targetName();
+		return type + " " + entry.getIndex() + ' ' + mapping.targetName();
 	}
 
 	private void writeMapping(StringBuilder builder, EntryMapping mapping) {

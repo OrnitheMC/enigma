@@ -259,7 +259,6 @@ public final class TinyV2Reader implements MappingsReader {
 		mapping.addJavadocLine(MappingHelper.unescape(javadoc));
 	}
 
-
 	private MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		MethodEntry ownerMethod = (MethodEntry) parent.getEntry();
 		int variableIndex = Integer.parseInt(tokens[1]);

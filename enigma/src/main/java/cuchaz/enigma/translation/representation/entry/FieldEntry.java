@@ -9,7 +9,6 @@ import cuchaz.enigma.translation.representation.TypeDescriptor;
 
 import java.util.Objects;
 import java.util.function.Predicate;
-
 import javax.annotation.Nonnull;
 
 public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {

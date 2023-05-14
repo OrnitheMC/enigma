@@ -4,7 +4,6 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.gui.config.Decompiler;
 import cuchaz.enigma.gui.util.GridBagConstraintsBuilder;
 import cuchaz.enigma.gui.util.GuiUtil;
-import cuchaz.enigma.gui.util.ScaleUtil;
 import cuchaz.enigma.utils.I18n;
 
 import java.awt.Container;

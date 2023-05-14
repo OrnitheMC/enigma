@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-
 import javax.annotation.Nullable;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
@@ -140,10 +139,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	}
 
 	/**
- 	 * Returns the ancestry of this entry, including itself.
- 	 * The entries are listed in order from furthest to closest.
- 	 * (i.e. this entry is last in the lis)
- 	 */
+	 * Returns the ancestry of this entry, including itself.
+	 * The entries are listed in order from furthest to closest.
+	 * (i.e. this entry is last in the lis)
+	 */
 	default List<Entry<?>> getAncestry() {
 		P parent = this.getParent();
 		List<Entry<?>> entries = new ArrayList<>();

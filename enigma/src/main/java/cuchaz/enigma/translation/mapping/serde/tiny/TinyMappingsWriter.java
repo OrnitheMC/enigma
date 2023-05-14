@@ -32,7 +32,6 @@ public class TinyMappingsWriter implements MappingsWriter {
 	private static final String VERSION_CONSTANT = "v1";
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
 
-
 	//Possibly add a gui or a way to select the namespaces when exporting from the gui
 	public static final TinyMappingsWriter INSTANCE = new TinyMappingsWriter("intermediary", "named");
 

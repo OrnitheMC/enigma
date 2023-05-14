@@ -44,12 +44,12 @@ public class IndexEntryResolver implements EntryResolver {
 		}
 
 		// Local variables belong to a specific method implementation,
- 		// compared to parameters, which belong to the method declaration
- 		if (entry instanceof LocalVariableEntry l && !l.isArgument()) {
- 			return Collections.singleton(entry);
- 		}
+		// compared to parameters, which belong to the method declaration
+		if (entry instanceof LocalVariableEntry l && !l.isArgument()) {
+			return Collections.singleton(entry);
+		}
 
-		Entry<ClassEntry> classChild = getClassChild(entry);
+		Entry<ClassEntry> classChild = this.getClassChild(entry);
 
 		if (classChild != null && !(classChild instanceof ClassEntry)) {
 			AccessFlags access = this.entryIndex.getEntryAccess(classChild);

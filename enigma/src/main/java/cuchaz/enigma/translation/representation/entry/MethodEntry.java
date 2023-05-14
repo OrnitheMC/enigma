@@ -9,7 +9,6 @@ import cuchaz.enigma.translation.representation.MethodDescriptor;
 
 import java.util.Objects;
 import java.util.function.Predicate;
-
 import javax.annotation.Nonnull;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
@@ -81,10 +80,11 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
-		if (entry instanceof MethodEntry methodEntry && descriptor.canConflictWith(methodEntry.descriptor)) {
-			if (parent.equals(methodEntry.parent)) {
+		if (entry instanceof MethodEntry methodEntry && this.descriptor.canConflictWith(methodEntry.descriptor)) {
+			if (this.parent.equals(methodEntry.parent)) {
 				return true;
 			}
+
 			return isStatic.test(this) != isStatic.test(methodEntry);
 		}
 

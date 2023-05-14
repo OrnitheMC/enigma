@@ -19,7 +19,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -89,11 +88,10 @@ public class JavadocDialog {
 		buttonsPanel.add(saveButton);
 
 		JButton renderButton = new JButton(I18n.translate("render"));
-		renderButton.addActionListener(event -> render());
+		renderButton.addActionListener(event -> this.render());
 		buttonsPanel.add(renderButton);
 
 		contentPane.add(buttonsPanel, BorderLayout.SOUTH);
-
 
 		// tags panel
 		JMenuBar tagsMenu = new JMenuBar();
@@ -198,7 +196,6 @@ public class JavadocDialog {
 		dialog.text.grabFocus();
 	}
 
-
 	public JDialog getUi() {
 		return this.ui;
 	}
@@ -212,7 +209,7 @@ public class JavadocDialog {
 	private class RenderedJavadocWindowListener implements WindowListener {
 		@Override
 		public void windowClosing(WindowEvent e) {
-			if (renderedJavadocDialog != null) closeChildren();
+			if (JavadocDialog.this.renderedJavadocDialog != null) JavadocDialog.this.closeChildren();
 		}
 
 		@Override public void windowOpened(WindowEvent e) {}

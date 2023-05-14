@@ -272,7 +272,7 @@ public class IdentifierPanel {
 		}
 
 		public ConvertingTextField addRenameTextField(EditableType searchType, String c2) {
-			String description = switch(searchType) {
+			String description = switch (searchType) {
 				case CLASS -> I18n.translate("info_panel.identifier.class");
 				case METHOD -> I18n.translate("info_panel.identifier.method");
 				case FIELD -> I18n.translate("info_panel.identifier.field");
