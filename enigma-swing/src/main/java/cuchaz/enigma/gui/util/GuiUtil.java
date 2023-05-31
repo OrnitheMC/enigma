@@ -139,7 +139,7 @@ public class GuiUtil {
 	}
 
 	public static Icon getClassIcon(Gui gui, ClassEntry entry) {
-		EnigmaProject project = gui.getController().project;
+		EnigmaProject project = gui.getController().getProject();
 
 		if (project == null) {
 			return CLASS_ICON;

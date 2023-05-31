@@ -1,6 +1,7 @@
 package cuchaz.enigma.gui.dialog;
 
 import cuchaz.enigma.Enigma;
+import cuchaz.enigma.gui.Gui;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.gui.util.ScaleUtil;
@@ -28,10 +29,13 @@ import javax.swing.WindowConstants;
 public class CrashDialog {
 	private static CrashDialog instance = null;
 
+	private final Gui gui;
 	private final JFrame frame;
 	private final JTextArea text;
 
-	private CrashDialog(JFrame parent) {
+	private CrashDialog(Gui gui) {
+		this.gui = gui;
+
 		// init frame
 		this.frame = new JFrame(String.format(I18n.translate("crash.title"), Enigma.NAME));
 		final Container pane = this.frame.getContentPane();
@@ -68,38 +72,42 @@ public class CrashDialog {
 		buttonsPanel.add(Box.createHorizontalGlue());
 		buttonsPanel.add(GuiUtil.unboldLabel(new JLabel(I18n.translate("crash.exit.warning"))));
 		JButton ignoreButton = new JButton(I18n.translate("crash.ignore"));
-		ignoreButton.addActionListener(event -> {
-			// close (hide) the dialog
-			this.frame.setVisible(false);
-		});
+		ignoreButton.addActionListener(event -> this.frame.setVisible(false));
 		buttonsPanel.add(ignoreButton);
 		JButton exitButton = new JButton(I18n.translate("crash.exit"));
-		exitButton.addActionListener(event -> {
-			// exit enigma
-			System.exit(1);
-		});
+		exitButton.addActionListener(event -> System.exit(1));
 		buttonsPanel.add(exitButton);
 		pane.add(buttonsPanel, BorderLayout.SOUTH);
 
 		// show the frame
 		this.frame.setSize(ScaleUtil.getDimension(600, 400));
-		this.frame.setLocationRelativeTo(parent);
+		this.frame.setLocationRelativeTo(gui.getFrame());
 		this.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 
-	public static void init(JFrame parent) {
-		instance = new CrashDialog(parent);
+	public static void init(Gui gui) {
+		instance = new CrashDialog(gui);
 	}
 
 	public static void show(Throwable ex) {
-		// get the error report
-		StringWriter buf = new StringWriter();
-		ex.printStackTrace(new PrintWriter(buf));
-		String report = buf.toString();
+		show(ex, true);
+	}
 
-		// show it!
-		instance.text.setText(report);
-		instance.frame.doLayout();
-		instance.frame.setVisible(true);
+	public static void show(Throwable ex, boolean isNew) {
+		if (instance != null) {
+			// get the error report
+			StringWriter buf = new StringWriter();
+			ex.printStackTrace(new PrintWriter(buf));
+			String report = buf.toString();
+
+			// show it!
+			instance.text.setText(report);
+			instance.frame.doLayout();
+			instance.frame.setVisible(true);
+
+			if (isNew) {
+				instance.gui.addCrash(ex);
+			}
+		}
 	}
 }
