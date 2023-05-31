@@ -40,7 +40,7 @@ public class WarningChecker {
 	}
 
 	public boolean checkOverwrittenMethods(EntryReference<Entry<?>, Entry<?>> reference, EntryRemapper mapper) {
-		Collection<MethodEntry> methods = this.controller.project.getJarIndex().getEntryIndex().getMethods();
+		Collection<MethodEntry> methods = this.controller.getProject().getJarIndex().getEntryIndex().getMethods();
 		for (MethodEntry methodEntry : methods) {
 			if (Objects.equals(methodEntry.getName(), reference.entry.getName())) {
 				String methodName = mapper.getDeobfMapping(methodEntry).targetName();
@@ -55,7 +55,7 @@ public class WarningChecker {
 
 	public boolean followsStyle(EntryReference<Entry<?>, Entry<?>> reference) {
 		// get the mapper and get the mapped name from the mapper
-		EntryRemapper mapper = this.controller.project.getMapper();
+		EntryRemapper mapper = this.controller.getProject().getMapper();
 		String name = mapper.getDeobfMapping(reference.entry).targetName();
 		if (name != null) {
 			if (reference.entry instanceof ClassEntry) {
@@ -113,7 +113,7 @@ public class WarningChecker {
 	}
 
 	public boolean followsFieldStyle(EntryReference<Entry<?>, Entry<?>> reference, String name) {
-		EntryIndex entryIndex = this.controller.project.getJarIndex().getEntryIndex();
+		EntryIndex entryIndex = this.controller.getProject().getJarIndex().getEntryIndex();
 		FieldEntry fieldEntry = (FieldEntry) reference.entry;
 		AccessFlags accessFlags = entryIndex.getFieldAccess(fieldEntry);
 		String fieldType = fieldEntry.getDesc().toString();

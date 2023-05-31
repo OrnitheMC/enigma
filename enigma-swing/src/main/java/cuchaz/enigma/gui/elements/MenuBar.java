@@ -231,7 +231,7 @@ public class MenuBar {
 		this.exportJarItem.setEnabled(jarOpen);
 		this.statsItem.setEnabled(jarOpen);
 		this.mapLocalsItem.setEnabled(jarOpen);
-		this.mapLocalsItem.setText(I18n.translate(jarOpen && this.gui.getController().enigma.mapLocals() ? "menu.advanced.map_locals.disable" : "menu.advanced.map_locals.enable"));
+		this.mapLocalsItem.setText(I18n.translate(jarOpen && this.gui.getController().getEnigma().mapLocals() ? "menu.advanced.map_locals.disable" : "menu.advanced.map_locals.enable"));
 	}
 
 	public void retranslateUi() {
@@ -405,7 +405,7 @@ public class MenuBar {
 	}
 
 	private void toggleMapLocals() {
-		this.gui.getController().enigma.toggleMapLocals();
+		this.gui.getController().getEnigma().toggleMapLocals();
 		this.onReloadAllClicked();
 	}
 
