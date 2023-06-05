@@ -23,9 +23,7 @@ import cuchaz.enigma.gui.config.NetConfig;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.ProgressDialog;
 import cuchaz.enigma.gui.docker.CollabDocker;
-import cuchaz.enigma.gui.docker.Docker;
-import cuchaz.enigma.gui.stats.StatsGenerator;
-import cuchaz.enigma.gui.stats.StatsMember;
+import cuchaz.enigma.stats.StatType;
 import cuchaz.enigma.gui.util.History;
 import cuchaz.enigma.network.ClientPacketHandler;
 import cuchaz.enigma.network.EnigmaClient;
@@ -65,6 +63,8 @@ import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
 import org.tinylog.Logger;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
@@ -79,8 +79,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 public class GuiController implements ClientPacketHandler {
 	private final Gui gui;
@@ -115,7 +113,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> openJar(final Path jarPath) {
 		this.gui.onStartOpenJar();
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			this.project = this.enigma.openJar(jarPath, new ClasspathClassProvider(), progress);
 			this.indexTreeBuilder = new IndexTreeBuilder(this.project.getJarIndex());
 			this.chp = new ClassHandleProvider(this.project, UiConfig.getDecompiler().service);
@@ -157,7 +155,7 @@ public class GuiController implements ClientPacketHandler {
 		UiConfig.addRecentFilePair(this.project.getJarPath(), path);
 		this.gui.getMenuBar().reloadOpenRecentMenu(this.gui);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
 				MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -202,7 +200,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> saveMappings(Path path, MappingFormat format) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EntryRemapper mapper = this.project.getMapper();
 			MappingSaveParameters saveParameters = this.enigma.getProfile().getMappingSaveParameters();
 
@@ -251,13 +249,13 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> dropMappings() {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> this.project.dropMappings(progress));
+		return ProgressDialog.runOffThread(this.gui, progress -> this.project.dropMappings(progress));
 	}
 
 	public CompletableFuture<Void> exportSource(final Path path) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EnigmaProject.JarExport jar = this.project.exportRemappedJar(progress);
 			jar.decompileStream(progress, this.chp.getDecompilerService(), EnigmaProject.DecompileErrorStrategy.TRACE_AS_SOURCE)
 					.forEach(source -> {
@@ -273,7 +271,7 @@ public class GuiController implements ClientPacketHandler {
 	public CompletableFuture<Void> exportJar(final Path path) {
 		if (this.project == null) return CompletableFuture.completedFuture(null);
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
+		return ProgressDialog.runOffThread(this.gui, progress -> {
 			EnigmaProject.JarExport jar = this.project.exportRemappedJar(progress);
 			jar.write(path, progress);
 		});
@@ -546,9 +544,9 @@ public class GuiController implements ClientPacketHandler {
 		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
-	public void openStats(Set<StatsMember> includedMembers, String topLevelPackage, boolean includeSynthetic) {
-		ProgressDialog.runOffThread(this.gui.getFrame(), progress -> {
-			String data = new StatsGenerator(this.project).generate(progress, includedMembers, topLevelPackage, includeSynthetic).getTreeJson();
+	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {
+		ProgressDialog.runOffThread(this.gui, progress -> {
+			String data = this.gui.getStatsManager().getGenerator().generate(progress, includedTypes, topLevelPackage, includeSynthetic).getTreeJson();
 
 			try {
 				File statsFile = File.createTempFile("stats", ".html");
@@ -638,7 +636,7 @@ public class GuiController implements ClientPacketHandler {
 			this.gui.getNotificationManager().notify(new ParameterizedMessage(Message.LEFT_SERVER));
 		}
 
-		Docker.getDocker(CollabDocker.class).setUp();
+		this.gui.getDockerManager().getDocker(CollabDocker.class).setUp();
 	}
 
 	@Override

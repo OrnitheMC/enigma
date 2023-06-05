@@ -116,7 +116,7 @@ public class ClassSelectorPopupMenu {
 
 		Map<String, Runnable> renameStack = new HashMap<>();
 
-		return ProgressDialog.runOffThread(this.gui.getFrame(), listener -> {
+		return ProgressDialog.runOffThread(this.gui, listener -> {
 			listener.init(1, I18n.translate("popup_menu.class_selector.package_rename.discovering"));
 			TreeNode root = this.selector.getPackageManager().getRoot();
 
@@ -128,7 +128,7 @@ public class ClassSelectorPopupMenu {
 			listener.init(renameStack.size(), I18n.translate("popup_menu.class_selector.package_rename.renaming_classes"));
 
 			Map<ClassesDocker, List<ClassSelector.StateEntry>> expansionStates = new HashMap<>();
-			for (Docker docker : Docker.getDockers().values()) {
+			for (Docker docker : this.gui.getDockerManager().getDockers()) {
 				if (docker instanceof ClassesDocker classesDocker) {
 					expansionStates.put(classesDocker, classesDocker.getClassSelector().getExpansionState());
 				}

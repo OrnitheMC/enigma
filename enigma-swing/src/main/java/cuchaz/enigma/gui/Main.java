@@ -115,6 +115,10 @@ public class Main {
 			setApplicationIcon(gui);
 			GuiController controller = gui.getController();
 
+			if (options.has("hide-progress-bars")) {
+				gui.setShowsProgressBars(false);
+			}
+
 			if (Boolean.parseBoolean(System.getProperty("enigma.catchExceptions", "true"))) {
 				// install a global exception handler to the event thread
 				CrashDialog.init(gui);
