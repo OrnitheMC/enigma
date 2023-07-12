@@ -31,7 +31,6 @@ public class MethodDescriptor implements Translatable {
 					i++;
 					break;
 				} else {
-
 					String type = TypeDescriptor.parseFirst(desc.substring(i));
 					this.argumentDescs.add(new ArgumentDescriptor(type, ParameterAccessFlags.DEFAULT));
 					i += type.length();
