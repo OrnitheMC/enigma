@@ -19,6 +19,9 @@ subprojects {
         maven {
             url = "https://maven.quiltmc.org/repository/snapshot/"
         }
+		maven {
+			url = "https://maven.fabricmc.net/"
+		}
     }
 
     dependencies {
@@ -33,7 +36,7 @@ subprojects {
     }
 
     group = 'net.ornithemc'
-    version = '1.8.0'
+    version = '1.8.1'
 
     var ENV = System.getenv()
     version = version + (ENV.GITHUB_ACTIONS ? (ENV.SNAPSHOTS_URL ? "-SNAPSHOT" : "") : "+local")

@@ -84,6 +84,10 @@ public class ClassSelector extends JTree {
 		}));
 
 		this.setCellRenderer(new DefaultTreeCellRenderer() {
+			{
+				this.setLeafIcon(null);
+			}
+
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -93,7 +97,7 @@ public class ClassSelector extends JTree {
 						@Override
 						public String getToolTipText(MouseEvent event) {
 							StringBuilder text = new StringBuilder(I18n.translateFormatted("class_selector.tooltip.stats_for", node.getDeobfEntry().getSimpleName()));
-							text.append("\n");
+							text.append(System.lineSeparator());
 							StatsResult stats = ClassSelector.this.statsManager.getStats(node);
 
 							if (stats == null) {

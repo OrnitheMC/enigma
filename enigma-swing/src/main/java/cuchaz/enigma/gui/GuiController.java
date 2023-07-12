@@ -38,6 +38,7 @@ import cuchaz.enigma.source.DecompiledClassSource;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryChange;
@@ -167,6 +168,7 @@ public class GuiController implements ClientPacketHandler {
 
 				this.refreshClasses();
 				this.chp.invalidateJavadoc();
+				this.gui.getStatsManager().setStatsGenerator(new StatsGenerator(this.project));
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
 			}
@@ -523,25 +525,26 @@ public class GuiController implements ClientPacketHandler {
 		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
 
-		boolean renamed = !change.getDeobfName().isUnchanged();
-		this.gui.updateStructure(this.gui.getActiveEditor());
+		if (vc.canProceed()) {
+			boolean renamed = !change.getDeobfName().isUnchanged();
+			this.gui.updateStructure(this.gui.getActiveEditor());
 
-		if (!Objects.equals(prev.targetName(), mapping.targetName())) {
-			this.chp.invalidateMapped();
+			if (!Objects.equals(prev.targetName(), mapping.targetName())) {
+				this.chp.invalidateMapped();
+			}
+
+			if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {
+				this.chp.invalidateJavadoc(target.getTopLevelClass());
+			}
+
+			if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
+				boolean isOldOb = prev.targetName() == null;
+				boolean isNewOb = mapping.targetName() == null;
+				this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
+			} else if (updateSwingState) {
+				this.gui.reloadStats(change.getTarget().getTopLevelClass());
+			}
 		}
-
-		if (!Objects.equals(prev.javadoc(), mapping.javadoc())) {
-			this.chp.invalidateJavadoc(target.getTopLevelClass());
-		}
-
-		if (renamed && target instanceof ClassEntry classEntry && !classEntry.isInnerClass()) {
-			boolean isOldOb = prev.targetName() == null;
-			boolean isNewOb = mapping.targetName() == null;
-			this.gui.moveClassTree(target.getContainingClass(), updateSwingState, isOldOb, isNewOb);
-			return;
-		}
-
-		this.gui.reloadClassEntry(change.getTarget().getTopLevelClass(), updateSwingState);
 	}
 
 	public void openStats(Set<StatType> includedTypes, String topLevelPackage, boolean includeSynthetic) {

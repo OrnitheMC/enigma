@@ -8,32 +8,32 @@ import cuchaz.enigma.gui.config.Themes;
 import cuchaz.enigma.gui.config.UiConfig;
 import cuchaz.enigma.gui.dialog.JavadocDialog;
 import cuchaz.enigma.gui.dialog.SearchDialog;
+import cuchaz.enigma.gui.docker.AllClassesDocker;
+import cuchaz.enigma.gui.docker.CallsTreeDocker;
 import cuchaz.enigma.gui.docker.ClassesDocker;
+import cuchaz.enigma.gui.docker.CollabDocker;
+import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.Dock;
+import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.docker.DockerManager;
+import cuchaz.enigma.gui.docker.ImplementationsTreeDocker;
+import cuchaz.enigma.gui.docker.InheritanceTreeDocker;
 import cuchaz.enigma.gui.docker.NotificationsDocker;
+import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
+import cuchaz.enigma.gui.docker.StructureDocker;
 import cuchaz.enigma.gui.elements.EditorTabbedPane;
 import cuchaz.enigma.gui.elements.MainWindow;
 import cuchaz.enigma.gui.elements.MenuBar;
 import cuchaz.enigma.gui.panels.EditorPanel;
 import cuchaz.enigma.gui.panels.IdentifierPanel;
-import cuchaz.enigma.gui.docker.ObfuscatedClassesDocker;
-import cuchaz.enigma.gui.docker.CollabDocker;
-import cuchaz.enigma.gui.docker.StructureDocker;
-import cuchaz.enigma.gui.docker.CallsTreeDocker;
-import cuchaz.enigma.gui.docker.ImplementationsTreeDocker;
-import cuchaz.enigma.gui.docker.InheritanceTreeDocker;
-import cuchaz.enigma.gui.docker.DeobfuscatedClassesDocker;
-import cuchaz.enigma.gui.docker.AllClassesDocker;
-import cuchaz.enigma.gui.docker.Dock;
-import cuchaz.enigma.gui.docker.Docker;
 import cuchaz.enigma.gui.renderer.MessageListCellRenderer;
-import cuchaz.enigma.stats.StatsGenerator;
-import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.gui.util.GuiUtil;
 import cuchaz.enigma.gui.util.LanguageUtil;
 import cuchaz.enigma.gui.util.ScaleUtil;
+import cuchaz.enigma.gui.util.StatsManager;
 import cuchaz.enigma.network.ServerMessage;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.stats.StatsGenerator;
 import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -577,28 +577,7 @@ public class Gui {
 			}
 		}
 
-		this.reloadClassEntry(classEntry, updateSwingState);
-
-		if (updateSwingState) {
-			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
-			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
-		}
-	}
-
-	/**
-	 * Reloads stats for the provided class in all selectors and updates the {@link AllClassesDocker} instance.
-	 * @param classEntry the class to reload
-	 * @param updateSwingState whether swing state should be updated (visual reloads)
-	 */
-	public void reloadClassEntry(ClassEntry classEntry, boolean updateSwingState) {
-		if (updateSwingState) {
-			for (Docker value : this.dockerManager.getDockers()) {
-				if (value instanceof ClassesDocker docker) {
-					docker.getClassSelector().reloadStats(classEntry);
-				}
-			}
-		}
-
+		// all classes selector always needs updating on class rename
 		ClassSelector allClassesSelector = this.dockerManager.getDocker(AllClassesDocker.class).getClassSelector();
 		List<ClassSelector.StateEntry> expansionState = allClassesSelector.getExpansionState();
 		allClassesSelector.moveClassIn(classEntry);
@@ -606,6 +585,21 @@ public class Gui {
 		if (updateSwingState) {
 			allClassesSelector.reload();
 			allClassesSelector.restoreExpansionState(expansionState);
+			deobfuscatedClassSelector.restoreExpansionState(deobfuscatedPanelExpansionState);
+			obfuscatedClassSelector.restoreExpansionState(obfuscatedPanelExpansionState);
+			this.reloadStats(classEntry);
+		}
+	}
+
+	/**
+	 * Reloads stats for the provided class in all selectors.
+	 * @param classEntry the class to reload
+	 */
+	public void reloadStats(ClassEntry classEntry) {
+		for (Docker value : this.dockerManager.getDockers()) {
+			if (value instanceof ClassesDocker docker) {
+				docker.getClassSelector().reloadStats(classEntry);
+			}
 		}
 	}
 

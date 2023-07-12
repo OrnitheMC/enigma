@@ -79,8 +79,8 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 		for (ParentedEntry<?> child : children.toList()) {
 			StructureTreeNode childNode = new StructureTreeNode(project, this.parentEntry, child);
 
-			if (child instanceof ClassEntry) {
-				childNode = new StructureTreeNode(project, (ClassEntry) child, child);
+			if (child instanceof ClassEntry classEntry) {
+				childNode = new StructureTreeNode(project, classEntry, child);
 				childNode.load(project, options);
 			}
 
@@ -110,7 +110,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 			result = result + ": " + returnType;
 		} else if (this.entry instanceof MethodDefEntry) {
 			MethodDefEntry method = (MethodDefEntry) translateResult.getValue();
-			String args = this.parseArgs(method.getDesc().getArgumentDescs());
+			String args = this.parseArgs(method.getDesc().getTypeDescs());
 			String returnType = this.parseDesc(method.getDesc().getReturnDesc());
 
 			if (method.isConstructor()) {

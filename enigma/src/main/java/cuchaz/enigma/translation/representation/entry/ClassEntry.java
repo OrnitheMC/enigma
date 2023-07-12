@@ -133,8 +133,9 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
-		return true;
+
+	public boolean canConflictWith(Entry<?> entry) {
+		return entry instanceof ClassEntry;
 	}
 
 	@Override

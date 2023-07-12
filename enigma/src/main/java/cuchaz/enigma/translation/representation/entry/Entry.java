@@ -7,7 +7,6 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
@@ -100,13 +99,39 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	Entry<P> withParent(P parent);
 
 	/**
-	 * Test if this entry can conflict with the given related entry.
-	 * The containing class of the given entry will be equal to this
-	 * entry's containing class, or equal to a super class or super
-	 * interface or child class of this entry's containing class.
-	 */
-	boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic);
 
+	 * Determines whether this entry conflicts with the given entry.
+	 * Conflicts are when two entries have the same name and will cause a compilation error when remapped.
+	 */
+	boolean canConflictWith(Entry<?> entry);
+
+	/**
+	 * Determines whether this entry <em>shadows</em> the given entry.
+	 * Shadowing is when an entry from a child class has an identical name to an entry in its parent class,
+	 * meaning that the parent entry is only accessible via a {@code Parent.this.entry} reference. Shadowing should
+	 * emit a warning when committed since it will often cause unintended behavior.
+	 *
+	 * <pre>
+	 * {@code
+	 * public class D {
+	 * 	 public int name;
+	 * 	 public String a;
+	 *
+	 *  	public void b() {
+	 *  	}
+	 *
+	 * 	 public class D.E {
+	 * 		public int name;
+	 *
+	 * 		public void b() {
+	 *         }
+	 *  	}
+	 *  }
+	 *  }
+	 *  </pre>
+	 *  In this example, {@code D.E.name} shadows {@code D.name} and {@code D.E.b} shadows {@code D.b}.
+	 *  This means that calling either one from {@code D.E} will use the shadowed entry instead of the original.
+	 */
 	boolean canShadow(Entry<?> entry);
 
 	default ClassEntry getContainingClass() {
