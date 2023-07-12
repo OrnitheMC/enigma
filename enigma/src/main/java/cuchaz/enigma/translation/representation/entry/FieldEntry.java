@@ -8,7 +8,6 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {
@@ -75,7 +74,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
+	public boolean canConflictWith(Entry<?> entry) {
 		return entry instanceof FieldEntry fieldEntry && this.parent.equals(fieldEntry.parent);
 	}
 
