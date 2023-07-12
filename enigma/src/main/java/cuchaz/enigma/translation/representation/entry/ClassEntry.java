@@ -11,7 +11,6 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
