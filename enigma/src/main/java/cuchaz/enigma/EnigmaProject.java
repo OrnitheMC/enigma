@@ -51,6 +51,7 @@ import java.util.stream.Stream;
 
 public class EnigmaProject {
 	private static final List<Pair<String, String>> NON_RENAMABLE_METHODS = new ArrayList<>();
+	public static boolean doFastRenamableMethodCheck = true; // it's jank but I can't be arsed rn
 
 	static {
 		NON_RENAMABLE_METHODS.add(new Pair<>("hashCode", "()I"));
@@ -160,8 +161,32 @@ public class EnigmaProject {
 
 	public boolean isRenamable(Entry<?> obfEntry) {
 		// HACKHACK: hardcoded obfuscation format
-		if (obfEntry instanceof MethodEntry method && !method.getName().startsWith("m_")) {
-			return false;
+		if (obfEntry instanceof MethodEntry method) {
+			if (method.isConstructor()) {
+				return false;
+			}
+
+			String name = method.getName();
+
+			if (doFastRenamableMethodCheck) {
+				return name.startsWith("m_");
+			}
+
+			String desc = method.getDesc().toString();
+
+			for (Pair<String, String> pair : NON_RENAMABLE_METHODS) {
+				if (pair.a().equals(name) && pair.b().equals(desc)) {
+					return false;
+				}
+			}
+
+			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
+
+			if (parent != null && parent.isEnum()
+					&& ((name.equals("values") && desc.equals("()[L" + parent.getFullName() + ";"))
+					|| (name.equals("valueOf") && desc.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
+				return false;
+			}
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument() && !this.enigma.mapLocals()) {
 			return false;
 		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {

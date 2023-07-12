@@ -19,7 +19,9 @@ public class TestJarIndexEnums {
 	@Test
 	void checkEnumStats() {
 		EnigmaProject project = openProject();
+		EnigmaProject.doFastRenamableMethodCheck = false;
 		StatsResult stats = new StatsGenerator(project).generate(ProgressListener.none(), EnumSet.allOf(StatType.class), "", false);
+		EnigmaProject.doFastRenamableMethodCheck = true;
 
 		assertThat(stats.getMapped(StatType.CLASSES), equalTo(0));
 		assertThat(stats.getMapped(StatType.FIELDS), equalTo(0));
