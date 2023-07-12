@@ -7,7 +7,6 @@ import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
@@ -77,7 +76,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	@Override
-	public boolean canConflictWith(Entry<?> entry, Predicate<Entry<?>> isStatic) {
+	public boolean canConflictWith(Entry<?> entry) {
 		return entry instanceof LocalVariableEntry localVariableEntry && localVariableEntry.parent.equals(this.parent);
 	}
 
