@@ -56,16 +56,18 @@ public class MappingValidator {
 		List<ParentedEntry<?>> siblings = new ArrayList<>(this.index.getChildrenByClass().get(containingClass));
 
 		// add sibling classes
-		if (entry instanceof ClassEntry) {
+		if (entry instanceof ClassEntry classEntry) {
 			siblings.addAll(this.index.getEntryIndex().getClasses().stream().filter(e -> {
-				// filter by package
-				String packageName = e.getPackageName();
-				if (packageName != null && name.contains("/")) {
-					String newPackage = name.substring(0, name.lastIndexOf('/'));
-					return packageName.equals(newPackage);
+				if (e.isInnerClass()) {
+					return false;
 				}
 
-				return true;
+				// filter by package
+				String packageName = e.getPackageName();
+				String originalPackageName = classEntry.getPackageName();
+
+				return (originalPackageName == null && packageName == null)
+					|| (packageName != null && packageName.equals(originalPackageName));
 			}).toList());
 		}
 
@@ -131,12 +133,11 @@ public class MappingValidator {
 		}
 
 		for (Map.Entry<Entry<?>, Entry<?>> siblingEntry : siblings.entrySet()) {
-			Entry<?> sibling = siblingEntry.getValue();
+			Entry<?> deobfSibling = siblingEntry.getValue();
 			Entry<?> obfSibling = siblingEntry.getKey();
 
-			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)) {
-				return false;
-			} else if (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+			if ((entry.canConflictWith(deobfSibling) && deobfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, deobfSibling, obfSibling))
+					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, obfSibling, obfSibling))) {
 				return false;
 			}
 		}
@@ -149,8 +150,8 @@ public class MappingValidator {
 			Entry<?> sibling = siblingEntry.getValue();
 			Entry<?> obfSibling = siblingEntry.getKey();
 
-			if (entry.canConflictWith(sibling) && sibling.getName().equals(name)
-					|| entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name)) {
+			if ((entry.canConflictWith(sibling) && sibling.getName().equals(name) && doesNotMatch(entry, obfEntry, sibling, obfSibling))
+					|| (entry.canConflictWith(obfSibling) && obfSibling.getName().equals(name) && doesNotMatch(entry, obfEntry, obfSibling, obfSibling))) {
 				AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(obfSibling);
 				AccessFlags flags = this.index.getEntryIndex().getEntryAccess(obfEntry);
 
@@ -158,9 +159,8 @@ public class MappingValidator {
 						|| (obfEntry.getParent() != null && entry.getParent().equals(sibling.getParent()));
 				if (!sameParent && flags != null && siblingFlags != null) {
 					// Methods from different parents don't conflict if they are both static or private
-					if (flags.isStatic() && siblingFlags.isStatic()) {
-						continue;
-					} else if (flags.isPrivate() && siblingFlags.isPrivate()) {
+					if ((flags.isStatic() && siblingFlags.isStatic())
+							|| (flags.isPrivate() && siblingFlags.isPrivate())) {
 						continue;
 					}
 				}
@@ -170,6 +170,10 @@ public class MappingValidator {
 		}
 
 		return true;
+	}
+
+	private static boolean doesNotMatch(Entry<?> entry, Entry<?> obfEntry, Entry<?> deobfSibling, Entry<?> obfSibling) {
+		return !entry.equals(obfSibling) && !entry.equals(deobfSibling) && !obfEntry.equals(deobfSibling) && !obfEntry.equals(obfSibling);
 	}
 
 	@Nullable
