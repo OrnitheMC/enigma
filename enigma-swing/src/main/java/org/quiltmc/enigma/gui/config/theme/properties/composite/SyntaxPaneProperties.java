@@ -49,6 +49,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 		public final TrackedValue<ThemeProperties.SerializableColor> deobfuscated;
 		public final TrackedValue<ThemeProperties.SerializableColor> deobfuscatedOutline;
 
+		public final TrackedValue<ThemeProperties.SerializableColor> nameWarning;
+		public final TrackedValue<ThemeProperties.SerializableColor> nameWarningOutline;
+
 		public final TrackedValue<ThemeProperties.SerializableColor> editorBackground;
 		public final TrackedValue<ThemeProperties.SerializableColor> highlight;
 		public final TrackedValue<ThemeProperties.SerializableColor> caret;
@@ -78,6 +81,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				ThemeProperties.SerializableColor deobfuscated,
 				ThemeProperties.SerializableColor deobfuscatedOutline,
 
+				ThemeProperties.SerializableColor nameWarning,
+				ThemeProperties.SerializableColor nameWarningOutline,
+
 				ThemeProperties.SerializableColor editorBackground,
 				ThemeProperties.SerializableColor highlight,
 				ThemeProperties.SerializableColor caret,
@@ -105,6 +111,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 			this.deobfuscated = TrackedValue.create(deobfuscated, "deobfuscated");
 			this.deobfuscatedOutline = TrackedValue.create(deobfuscatedOutline, "deobfuscated_outline");
+
+			this.nameWarning = TrackedValue.create(nameWarning, "nameWarning");
+			this.nameWarningOutline = TrackedValue.create(nameWarningOutline, "nameWarningOutline");
 
 			this.editorBackground = TrackedValue.create(editorBackground, "editor_background");
 			this.highlight = TrackedValue.create(highlight, "highlight");
@@ -142,6 +151,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 				this.deobfuscated,
 				this.deobfuscatedOutline,
 
+				this.nameWarning,
+				this.nameWarningOutline,
+
 				this.editorBackground,
 				this.highlight,
 				this.caret,
@@ -177,6 +189,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 			private ThemeProperties.SerializableColor deobfuscated = new ThemeProperties.SerializableColor(0xFFDCFFDC);
 			private ThemeProperties.SerializableColor deobfuscatedOutline = new ThemeProperties.SerializableColor(0xFF50A050);
 
+			private ThemeProperties.SerializableColor nameWarning = new ThemeProperties.SerializableColor(0xCCFFD700);
+			private ThemeProperties.SerializableColor nameWarningOutline = new ThemeProperties.SerializableColor(0xFFFF8C00);
+
 			private ThemeProperties.SerializableColor editorBackground = new ThemeProperties.SerializableColor(0xFFFFFFFF);
 			private ThemeProperties.SerializableColor highlight = new ThemeProperties.SerializableColor(0xFF3333EE);
 			private ThemeProperties.SerializableColor caret = new ThemeProperties.SerializableColor(0xFF000000);
@@ -206,6 +221,9 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 					this.deobfuscated,
 					this.deobfuscatedOutline,
+
+					this.nameWarning,
+					this.nameWarningOutline,
 
 					this.editorBackground,
 					this.highlight,
@@ -247,6 +265,16 @@ public class SyntaxPaneProperties implements Config.Creator, Configurable {
 
 			public Builder obfuscatedOutline(ThemeProperties.SerializableColor obfuscatedOutline) {
 				this.obfuscatedOutline = obfuscatedOutline;
+				return this;
+			}
+
+			public Builder nameWarning(ThemeProperties.SerializableColor nameWarning) {
+				this.nameWarning = nameWarning;
+				return this;
+			}
+
+			public Builder nameWarningOutline(ThemeProperties.SerializableColor nameWarningOutline) {
+				this.nameWarningOutline = nameWarningOutline;
 				return this;
 			}
 

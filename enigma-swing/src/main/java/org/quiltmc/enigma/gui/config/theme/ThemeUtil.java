@@ -1,10 +1,10 @@
 package org.quiltmc.enigma.gui.config.theme;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
 import org.quiltmc.enigma.gui.util.ScaleUtil;
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.syntaxpain.JavaSyntaxKit;
 
 import java.awt.Color;
@@ -85,6 +85,7 @@ public final class ThemeUtil {
 				TokenType.JAR_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
 				TokenType.DYNAMIC_PROPOSED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().proposed.value(), Config.getCurrentSyntaxPaneColors().proposedOutline.value()),
 				TokenType.DEOBFUSCATED, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().deobfuscated.value(), Config.getCurrentSyntaxPaneColors().deobfuscatedOutline.value()),
+				TokenType.NAME_WARNING, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().nameWarning.value(), Config.getCurrentSyntaxPaneColors().nameWarningOutline.value()),
 				TokenType.DEBUG, BoxHighlightPainter.create(Config.getCurrentSyntaxPaneColors().debugToken.value(), Config.getCurrentSyntaxPaneColors().debugTokenOutline.value())
 		);
 	}
