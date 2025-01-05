@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN" "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+        <property name="optional" value="false"/>
+    </module>
+
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>
     <property name="localeLanguage" value="en"/>
@@ -51,7 +56,7 @@
 
         <!-- Ensure all imports are ship shape -->
         <module name="AvoidStarImport">
-            <property name="excludes" value="org.hamcrest.Matchers,cuchaz.enigma.TestEntryFactory"/>
+            <property name="excludes" value="org.hamcrest.Matchers,org.quiltmc.enigma.TestEntryFactory"/>
         </module>
         <module name="IllegalImport"/>
         <module name="RedundantImport"/>

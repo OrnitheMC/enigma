@@ -1,8 +1,6 @@
 # Enigma
 
-A tool for deobfuscation of Java bytecode. Forked from <https://bitbucket.org/cuchaz/enigma>, copyright Jeff Martin.
-Enigma is used by Orinthe to remap, decompile and deobfuscate minecraft source code.
-This project was forked from QuiltMCs version of Enigma which was in turn forked from FabricMCs Enigma.
+A tool for deobfuscation of Java bytecode. Forked from <https://github.com/QuiltMC/enigma>, which was forked from <https://bitbucket.org/cuchaz/enigma>, originally created by [Jeff Martin](https://www.cuchazinteractive.com/).
 
 ## License
 
@@ -28,13 +26,4 @@ Pre-compiled jars can be found on the [Ornithe maven](https://maven.ornithemc.ne
 
 ### On the command line
 
-`java -cp enigma.jar cuchaz.enigma.command.Main`
-
-### Contributing
-1. Clone the project
-2. Start editing
-3. You can launch enigma using the following command to test your changes:
-```
-./gradlew :enigma-swing:run --args="-jar <jar to analyse location> -mappings <mappings location> -profile <enigma_profile.json lowation>"
-```
-Note that any of the arguments after `--args` are optional
+`java -cp enigma.jar org.quiltmc.enigma.command.Main`

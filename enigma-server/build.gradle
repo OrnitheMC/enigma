@@ -1,3 +1,5 @@
+import quilt.internal.task.ProGuardExecTask
+
 plugins {
 	id 'application'
 	id 'checkstyle'
@@ -7,11 +9,23 @@ plugins {
 dependencies {
 	shadow(implementation project(':enigma'))
 	implementation libs.jopt
+
+	testImplementation testFixtures(project(':enigma'))
 }
 
-mainClassName = 'cuchaz.enigma.network.DedicatedEnigmaServer'
+application {
+	mainClass = 'org.quiltmc.enigma.network.DedicatedEnigmaServer'
+	jar.manifest.attributes 'Main-Class': mainClass
+}
 
-jar.manifest.attributes 'Main-Class': mainClassName
+tasks.named('test') {
+	inputs.files(
+		project(':enigma').tasks
+			.withType(ProGuardExecTask)
+			.named('completeTestObf')
+			.get().outJar
+	)
+}
 
 publishing {
 	publications {

@@ -11,58 +11,61 @@ Strings, see below.
 
 ## Login protocol
 ```
-Client     Server
-|               |
-|     Login     |
-| >>>>>>>>>>>>> |
-|               |
-| SyncMappings  |
-| <<<<<<<<<<<<< |
-|               |
-| ConfirmChange |
-| >>>>>>>>>>>>> |
+Client        Server
+|                  |
+|     LoginC2S     |
+| >>>>>>>>>>>>>>>> |
+|                  |
+| SyncMappingsS2C  |
+| <<<<<<<<<<<<<<<< |
+|                  |
+| ConfirmChangeC2S |
+| >>>>>>>>>>>>>>>> |
 ```
 1. On connect, the client sends a login packet to the server. This allows the server to test the validity of the client,
    as well as allowing the client to declare metadata about itself, such as the username.
-1. After validating the login packet, the server sends all its mappings to the client, and the client will apply them.
-1. Upon receiving the mappings, the client sends a `ConfirmChange` packet with `sync_id` set to 0, to confirm that it
+2. After validating the login packet, the server sends all its mappings to the client, and the client will apply them.
+   - Just before the mappings are sent, the server sends the new user list to every connected client
+3. Upon receiving the mappings, the client sends a `ConfirmChangeC2S` packet with `sync_id` set to 0, to confirm that it
    has received the mappings and is in sync with the server. Once the server receives this packet, the client will be
    allowed to modify mappings.
 
-The server will not accept any other packets from the client until this entire exchange has been completed. 
+The server will ignore any other packets from the client until this entire exchange has been completed, and may kick the
+client if any other packet is received during this stage.
 
 ## Kicking clients
 When the server kicks a client, it may optionally send a `Kick` packet immediately before closing the connection, which
 contains the reason why the client was kicked (so the client can display it to the user). This is not required though -
-the server may simply terminate the connection.
+the server may simply terminate the connection. After the connection is closed, the server should send the new user list
+to the other connected clients.
 
 ## Changing mappings
-This section uses the example of renaming, but the same pattern applies to all mapping changes.
 ```
-Client A   Server    Client B
-|           |               |
-| RenameC2S |               |
-| >>>>>>>>> |               |
-|           |               |
-|           |   RenameS2C   |
-|           | >>>>>>>>>>>>> |
-|           |               |
-|           | ConfirmChange |
-|           | <<<<<<<<<<<<< |
+Client A       Server        Client B
+|                |                  |
+| EntryChangeC2S |                  |
+| >>>>>>>>>>>>>> |                  |
+|                |                  |
+|                |  EntryChangeS2C  |
+|                | >>>>>>>>>>>>>>>> |
+|                |                  |
+|                | ConfirmChangeC2S |
+|                | <<<<<<<<<<<<<<<< |
 ```
 
 1. Client A validates the name and updates the mapping client-side to give the impression there is no latency >:)
-1. Client A sends a rename packet to the server, notifying it of the rename.
-1. The server assesses the validity of the rename. If it is invalid for whatever reason (e.g. the mapping was locked or
-   the name contains invalid characters), then the server sends an appropriate packet back to client A to revert the
-   change, with `sync_id` set to 0. The server will ignore any `ConfirmChange` packets it receives in response to this.
-1. If the rename was valid, the server will lock all clients except client A from being able to modify this mapping, and
-   then send an appropriate packet to all clients except client A notifying them of this rename. The `sync_id` will be a
+2. Client A sends an entry change packet to the server, notifying it of the change.
+3. The server assesses the validity of the change. If it is invalid for whatever reason (e.g. the mapping was locked or
+   the name contains invalid characters), then the server sends an appropriate packet back to client A to reset the
+   mapping back to the same state as the server, with `sync_id` set to 0. The server will ignore any `ConfirmChangeC2S`
+   packets it receives in response to this.
+4. If the change was valid, the server will lock all clients except client A from being able to modify this mapping, and
+   then send an appropriate packet to all clients except client A notifying them of this change. The `sync_id` will be a
    unique non-zero value identifying this change.
-1. Each client responds to this packet by updating their mappings locally to reflect this change, then sending a
-   `ConfirmChange` packet with the same `sync_id` as the one in the packet they received, to confirm that they have
+5. Each client responds to this packet by updating their mappings locally to reflect this change, then sending a
+   `ConfirmChangeC2S` packet with the same `sync_id` as the one in the packet they received, to confirm that they have
    received the change.
-1. When the server receives the `ConfirmChange` packet, and another change to that mapping hasn't occurred since, the
+6. When the server receives the `ConfirmChangeC2S` packet, and another change to that mapping hasn't occurred since, the
    server will unlock that mapping for that client and allow them to make changes again.
 
 ## Packets
@@ -94,7 +97,7 @@ struct utf {
 ```
 - `length`: The number of bytes in the UTF-8 encoding of the string. Note, this may not be the same as the number of
             Unicode characters in the string.
-- `data`: A standard UTF-8 encoded byte array representing the string. 
+- `data`: A standard UTF-8 encoded byte array representing the string.
 
 ### The Entry struct
 ```c
@@ -130,7 +133,7 @@ struct Entry {
 - `index`: The index of the local variable in the local variable table.
 - `parameter`: Whether the local variable is a parameter.
 
-### The Message struct
+### The ServerMessage struct
 ```c
 enum MessageType {
     MESSAGE_CHAT = 0,
@@ -143,7 +146,7 @@ enum MessageType {
 };
 typedef unsigned byte message_type_t;
 
-struct Message {
+struct ServerMessage {
     message_type_t type;
     union { // Note that the size of this varies depending on type, it is not constant size
         struct {
@@ -198,19 +201,12 @@ typedef enum tristate_change {
     TRISTATE_CHANGE_SET = 2
 } tristate_change_t;
 
-typedef enum access_modifier {
-    ACCESS_MODIFIER_UNCHANGED = 0,
-    ACCESS_MODIFIER_PUBLIC = 1,
-    ACCESS_MODIFIER_PROTECTED = 2,
-    ACCESS_MODIFIER_PRIVATE = 3
-} access_modifier_t;
-
 // Contains 4 packed values:
 // bitmask   searchType
 // 00000011  tristate_change_t deobf_name_change;
-// 00001100  tristate_change_t access_change;
-// 00110000  tristate_change_t javadoc_change;
-// 11000000  access_modifier_t access_modifiers;
+// 00001100  tristate_change_t javadoc_change;
+// 00110000  tristate_change_t token_type_change;
+// 11000000  tristate_change_t source_plugin_id_change;
 typedef uint8_t entry_change_flags;
 
 struct entry_change {
@@ -222,13 +218,20 @@ struct entry_change {
     if <javadoc_change == TRISTATE_CHANGE_SET> {
         utf javadoc;
     }
+    if <token_type_change == TRISTATE_CHANGE_SET> {
+        unsigned short token_type;
+    }
+    if <source_plugin_id_change == TRISTATE_CHANGE_SET> {
+        utf source_plugin_id;
+    }
 }
 ```
 - `entry`: The entry this change gets applied to.
 - `flags`: See definition of `entry_change_flags`.
 - `deobf_name`: The new deobfuscated name, if deobf_name_change == TRISTATE_CHANGE_SET
 - `javadoc`: The new javadoc, if javadoc_change == TRISTATE_CHANGE_SET
-- `access_modifiers`: The new access modifier, if access_change == TRISTATE_CHANGE_SET (otherwise 0)
+- `token_type`: The new token type, if token_type_change == TRISTATE_CHANGE_SET
+- `source_plugin_id`: The ID of the plugin that proposed this entry's name, if source_plugin_id_change == TRISTATE_CHANGE_SET
 
 ### Login (client-to-server)
 ```c
@@ -241,9 +244,9 @@ struct LoginC2SPacket {
 }
 ```
 - `protocol_version`: the version of the protocol. If the version does not match on the server, then the client will be
-                      kicked immediately. Currently always equal to 0.
-- `checksum`: the SHA-1 hash of the JAR file the client has open. If this does not match the SHA-1 hash of the JAR file
-              the server has open, the client will be kicked.
+                      kicked immediately.
+- `checksum`: the SHA-1 hash of the sorted class files in the JAR file the client has open. If this does not match the
+              SHA-1 hash of the JAR file the server has open, the client will be kicked.
 - `password`: the password needed to log into the server. Note that each `char` is 2 bytes, as per the Java data type.
               If this password is incorrect, the client will be kicked.
 - `username`: the username of the user logging in. If the username is not unique, the client will be kicked.
@@ -288,9 +291,10 @@ struct SyncMappingsS2CPacket {
 }
 struct MappingNode {
     NoParentEntry obf_entry;
-    boolean is_named;
     utf name;
     utf javadoc;
+    unsigned short token_type;
+    utf source_plugin_id;
     unsigned short children_count;
     MappingNode children[children_count];
 }
@@ -300,12 +304,14 @@ typedef { Entry but without the has_parent or parent fields } NoParentEntry;
 - `obf_entry`: The value of a node, containing the obfuscated name and descriptor of the entry.
 - `name`: The deobfuscated name of the entry, if it exists, otherwise the empty string.
 - `javadoc`: The documentation for the entry, if it exists, otherwise the empty string.
-- `children`: The children of this node
+- `token_type`: The token type of the entry.
+- `source_plugin_id`: If the name is proposed, the ID of the plugin that proposed the name, otherwise the empty string.
+- `children`: The children of this node.
 
 ### Message (server-to-client)
 ```c
 struct MessageS2CPacket {
-    Message message;
+    ServerMessage message;
 }
 ```
 
