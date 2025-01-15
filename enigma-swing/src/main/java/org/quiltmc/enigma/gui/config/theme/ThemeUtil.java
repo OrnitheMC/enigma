@@ -1,6 +1,5 @@
 package org.quiltmc.enigma.gui.config.theme;
 
-import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.config.api.values.TrackedValue;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.highlight.BoxHighlightPainter;
