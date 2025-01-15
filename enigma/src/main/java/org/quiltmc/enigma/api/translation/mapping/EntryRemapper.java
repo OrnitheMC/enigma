@@ -1,9 +1,11 @@
 package org.quiltmc.enigma.api.translation.mapping;
 
+import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.analysis.index.jar.InheritanceIndex;
 import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.analysis.index.mapping.MappingsIndex;
 import org.quiltmc.enigma.api.service.NameProposalService;
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.MappingTranslator;
 import org.quiltmc.enigma.api.translation.Translatable;
 import org.quiltmc.enigma.api.translation.TranslateResult;
@@ -16,6 +18,7 @@ import org.quiltmc.enigma.api.translation.representation.entry.ClassEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.validation.ValidationContext;
+import org.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +36,7 @@ public class EntryRemapper {
 	private final EntryTree<EntryMapping> proposedMappings;
 	private final DeltaTrackingTree<EntryMapping> mappings;
 
+	private final Enigma enigma;
 	private final EntryResolver obfResolver;
 	private final Translator deobfuscator;
 	private final JarIndex jarIndex;
@@ -41,13 +45,14 @@ public class EntryRemapper {
 	private final MappingValidator validator;
 	private final List<NameProposalService> proposalServices;
 
-	private EntryRemapper(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+	private EntryRemapper(Enigma enigma, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> jarProposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
 		this.deobfMappings = deobfMappings;
 		this.jarProposedMappings = jarProposedMappings;
 		this.proposedMappings = new HashEntryTree<>(jarProposedMappings);
 		this.mappings = new DeltaTrackingTree<>(new MergedEntryMappingTree(deobfMappings, this.proposedMappings));
 
 		this.obfResolver = jarIndex.getEntryResolver();
+		this.enigma = enigma;
 
 		this.deobfuscator = new MappingTranslator(this.mappings, this.obfResolver);
 		this.jarIndex = jarIndex;
@@ -57,12 +62,12 @@ public class EntryRemapper {
 		this.proposalServices = proposalServices;
 	}
 
-	public static EntryRemapper mapped(JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
+	public static EntryRemapper mapped(Enigma enigma, JarIndex jarIndex, MappingsIndex mappingsIndex, EntryTree<EntryMapping> proposedMappings, EntryTree<EntryMapping> deobfMappings, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(enigma, jarIndex, mappingsIndex, proposedMappings, deobfMappings, proposalServices);
 	}
 
-	public static EntryRemapper empty(JarIndex index, List<NameProposalService> proposalServices) {
-		return new EntryRemapper(index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
+	public static EntryRemapper empty(Enigma enigma, JarIndex index, List<NameProposalService> proposalServices) {
+		return new EntryRemapper(enigma, index, MappingsIndex.empty(), new HashEntryTree<>(), new HashEntryTree<>(), proposalServices);
 	}
 
 	public void validatePutMapping(ValidationContext vc, Entry<?> obfuscatedEntry, @Nonnull EntryMapping deobfMapping) {
@@ -142,7 +147,24 @@ public class EntryRemapper {
 		for (var service : this.proposalServices) {
 			var proposedNames = service.getDynamicProposedNames(this, obfEntry, oldMapping, newMapping);
 			if (proposedNames != null) {
-				proposedNames.forEach(this.proposedMappings::insert);
+				// due to unchecked proposal, proposers are allowed to insert other token types
+				// when deobfuscated, they must be put in the main tree
+				proposedNames.forEach((entry, mapping) -> {
+					if (entry == null) {
+						Logger.warn("Name proposer '" + service.getId() + "' proposed a  mapping (" + mapping + ") attached to a null entry!");
+						return;
+					}
+
+					service.validateProposedMapping(entry, mapping, true);
+
+					if (mapping == null) {
+						this.proposedMappings.remove(entry);
+					} else if (mapping.tokenType() == TokenType.DEOBFUSCATED) {
+						this.mappings.insert(entry, mapping);
+					} else {
+						this.proposedMappings.insert(entry, mapping);
+					}
+				});
 			}
 		}
 	}
@@ -163,6 +185,13 @@ public class EntryRemapper {
 
 	public Translator getDeobfuscator() {
 		return this.deobfuscator;
+	}
+
+	/**
+	 * {@return the enigma instance used to create this remapper}
+	 */
+	public Enigma getEnigma() {
+		return this.enigma;
 	}
 
 	public Stream<Entry<?>> getObfEntries() {

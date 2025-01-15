@@ -1,5 +1,6 @@
 package org.quiltmc.enigma.gui.element;
 
+import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.gui.ClassSelector;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.ClassesDocker;
@@ -99,7 +100,12 @@ public class ClassSelectorPopupMenu {
 			}
 		}
 
-		String input = JOptionPane.showInputDialog(this.gui.getFrame(), I18n.translate("popup_menu.class_selector.package_rename.title"), pathString.toString());
+		String title = switch (mode) {
+			case MOVE -> I18n.translateFormatted("popup_menu.class_selector.package_rename.move_title", pathString.toString());
+			case REFACTOR -> I18n.translateFormatted("popup_menu.class_selector.package_rename.rename_title", pathString.toString());
+		};
+
+		String input = JOptionPane.showInputDialog(this.gui.getFrame(), title, pathString.toString());
 		if (input != null) {
 			this.createPackageRenamer(mode).renamePackage(pathString.toString(), input);
 		}
@@ -121,7 +127,7 @@ public class ClassSelectorPopupMenu {
 		// update toggle mapping text to match
 		this.toggleMapping.setEnabled(selected != null);
 		if (selected != null) {
-			if (this.gui.getController().getProject().getRemapper().extendedDeobfuscate(selected).isDeobfuscated()) {
+			if (this.gui.getController().getProject().getRemapper().extendedDeobfuscate(selected).getType() == TokenType.DEOBFUSCATED) {
 				this.toggleMapping.setText(I18n.translate("popup_menu.reset_obfuscated"));
 			} else {
 				this.toggleMapping.setText(I18n.translate("popup_menu.mark_deobfuscated"));

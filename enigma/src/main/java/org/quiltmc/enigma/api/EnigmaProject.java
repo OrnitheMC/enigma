@@ -41,7 +41,6 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +73,7 @@ public class EnigmaProject {
 		this.jarChecksum = jarChecksum;
 
 		this.mappingsIndex = mappingsIndex;
-		this.remapper = EntryRemapper.mapped(jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+		this.remapper = EntryRemapper.mapped(enigma, jarIndex, this.mappingsIndex, proposedNames, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 	}
 
 	/**
@@ -93,12 +92,12 @@ public class EnigmaProject {
 			EntryTree<EntryMapping> mergedTree = EntryTreeUtil.merge(jarProposedMappings, mappings);
 
 			this.mappingsIndex.indexMappings(mergedTree, progress);
-			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, mappings, this.enigma.getNameProposalServices());
 		} else if (!jarProposedMappings.isEmpty()) {
 			this.mappingsIndex.indexMappings(jarProposedMappings, progress);
-			this.remapper = EntryRemapper.mapped(this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.mapped(this.enigma, this.jarIndex, this.mappingsIndex, jarProposedMappings, new HashEntryTree<>(), this.enigma.getNameProposalServices());
 		} else {
-			this.remapper = EntryRemapper.empty(this.jarIndex, this.enigma.getNameProposalServices());
+			this.remapper = EntryRemapper.empty(this.enigma, this.jarIndex, this.enigma.getNameProposalServices());
 		}
 
 		// update dynamically proposed names
@@ -145,26 +144,29 @@ public class EnigmaProject {
 	}
 
 	private Collection<Entry<?>> dropMappings(EntryTree<EntryMapping> mappings, ProgressListener progress) {
+		MappingsChecker.Dropper dropper = new MappingsChecker.Dropper();
+
 		// drop mappings that don't match the jar
 		MappingsChecker checker = new MappingsChecker(this, this.jarIndex, mappings);
-		MappingsChecker.Dropped droppedBroken = checker.dropBrokenMappings(progress);
 
-		Map<Entry<?>, String> droppedBrokenMappings = droppedBroken.getDroppedMappings();
+		checker.collectBrokenMappings(progress, dropper);
+
+		Map<Entry<?>, String> droppedBrokenMappings = dropper.getPendingDroppedMappings();
 		for (Map.Entry<Entry<?>, String> mapping : droppedBrokenMappings.entrySet()) {
 			Logger.warn("Couldn't find {} ({}) in jar. Mapping was dropped.", mapping.getKey(), mapping.getValue());
 		}
 
-		MappingsChecker.Dropped droppedEmpty = checker.dropEmptyMappings(progress);
+		dropper.applyPendingDrops(mappings);
+		checker.collectEmptyMappings(progress, dropper);
 
-		Map<Entry<?>, String> droppedEmptyMappings = droppedEmpty.getDroppedMappings();
+		Map<Entry<?>, String> droppedEmptyMappings = dropper.getPendingDroppedMappings();
 		for (Map.Entry<Entry<?>, String> mapping : droppedEmptyMappings.entrySet()) {
 			Logger.warn("{} ({}) was empty. Mapping was dropped.", mapping.getKey(), mapping.getValue());
 		}
 
-		Collection<Entry<?>> droppedMappings = new HashSet<>();
-		droppedMappings.addAll(droppedBrokenMappings.keySet());
-		droppedMappings.addAll(droppedEmptyMappings.keySet());
-		return droppedMappings;
+		dropper.applyPendingDrops(mappings);
+
+		return dropper.getDroppedMappings().keySet();
 	}
 
 	public boolean isNavigable(Entry<?> obfEntry) {
