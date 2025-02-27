@@ -16,6 +16,9 @@ import org.quiltmc.enigma.api.analysis.tree.FieldReferenceTreeNode;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.gui.dialog.CrashDialog;
+import org.quiltmc.enigma.gui.docker.ClassesDocker;
+import org.quiltmc.enigma.gui.docker.CollabDocker;
+import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.network.IntegratedEnigmaClient;
 import org.quiltmc.enigma.impl.analysis.IndexTreeBuilder;
 import org.quiltmc.enigma.api.analysis.tree.MethodImplementationsTreeNode;
@@ -29,7 +32,6 @@ import org.quiltmc.enigma.api.class_handle.ClassHandleProvider;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.gui.config.Config;
 import org.quiltmc.enigma.gui.dialog.ProgressDialog;
-import org.quiltmc.enigma.gui.docker.CollabDocker;
 import org.quiltmc.enigma.api.stats.StatType;
 import org.quiltmc.enigma.gui.util.History;
 import org.quiltmc.enigma.network.ClientPacketHandler;
@@ -83,7 +85,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -183,6 +184,13 @@ public class GuiController implements ClientPacketHandler {
 					ProgressListener progressListener = ProgressListener.createEmpty();
 					this.gui.getMainWindow().getStatusBar().syncWith(progressListener);
 					this.statsGenerator.generate(progressListener, EditableType.toStatTypes(this.gui.getEditableTypes()), false);
+
+					// ensure all class tree dockers show the update to the stats icons
+					for (Docker docker : this.gui.getDockerManager().getActiveDockers().values()) {
+						if (docker instanceof ClassesDocker) {
+							docker.repaint();
+						}
+					}
 				}).start();
 			} catch (MappingParseException e) {
 				JOptionPane.showMessageDialog(this.gui.getFrame(), e.getMessage());
@@ -220,7 +228,7 @@ public class GuiController implements ClientPacketHandler {
 		if (this.project == null) {
 			return CompletableFuture.completedFuture(null);
 		} else if (!service.supportsWriting()) {
-			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().toLowerCase(Locale.ROOT)));
+			String nonWriteableMessage = I18n.translateFormatted("menu.file.save.non_writeable", I18n.translate("mapping_format." + service.getId().split(":")[1].toLowerCase()));
 			JOptionPane.showMessageDialog(this.gui.getFrame(), nonWriteableMessage, I18n.translate("menu.file.save.cannot_save"), JOptionPane.ERROR_MESSAGE);
 			return CompletableFuture.completedFuture(null);
 		}

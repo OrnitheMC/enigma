@@ -341,7 +341,7 @@ public class MenuBar {
 		this.gui.getController().saveMappings(this.gui.mappingsFileChooser.getSelectedFile().toPath());
 	}
 
-	private void openMappingsDiscardPrompt(Runnable then) {
+	private void openMappingsDiscardPrompt(Runnable then, boolean isReload) {
 		if (this.gui.getController().isDirty()) {
 			this.gui.showDiscardDiag((response -> {
 				if (response == JOptionPane.YES_OPTION) {
@@ -351,22 +351,22 @@ public class MenuBar {
 				}
 
 				return null;
-			}), I18n.translate("prompt.close.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
+			}), I18n.translate(isReload ? "prompt.close.save_and_reload" : "prompt.close.save"), I18n.translate("prompt.close.discard"), I18n.translate("prompt.cancel"));
 		} else {
 			then.run();
 		}
 	}
 
 	private void onCloseMappingsClicked() {
-		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().closeMappings(), false);
 	}
 
 	private void onReloadMappingsClicked() {
-		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadMappings(), true);
 	}
 
 	private void onReloadAllClicked() {
-		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll());
+		this.openMappingsDiscardPrompt(() -> this.gui.getController().reloadAll(), true);
 	}
 
 	private void onExportSourceClicked() {
@@ -575,7 +575,7 @@ public class MenuBar {
 	private static void prepareSaveMappingsAsMenu(JMenu saveMappingsAsMenu, JMenuItem saveMappingsItem, Gui gui) {
 		for (ReadWriteService format : gui.getController().getEnigma().getReadWriteServices()) {
 			if (format.supportsWriting()) {
-				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().toLowerCase(Locale.ROOT)));
+				JMenuItem item = new JMenuItem(I18n.translate("mapping_format." + format.getId().split(":")[1].toLowerCase()));
 				item.addActionListener(event -> {
 					JFileChooser fileChooser = gui.mappingsFileChooser;
 					ExtensionFileFilter.setupFileChooser(gui, fileChooser, format);
