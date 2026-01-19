@@ -188,7 +188,7 @@ public class EnigmaProject {
 			String sig = method.getDesc().toString();
 
 			if (doFastRenamableMethodCheck) {
-				return name.startsWith("m_");
+				return name.startsWith("m_") || name.startsWith("method_");
 			}
 
 			// methods declared in object and record are not renamable
